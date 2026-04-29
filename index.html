@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Йога с Любовью — онлайн-клуб хатха-йоги для женщин | Любовь Лучистая</title>
-<meta name="description" content="Камерный онлайн-клуб хатха-йоги. Живые эфиры дважды в неделю, личная поддержка, архив 30+ записей. Пробные зарядки бесплатно. Преподаватель — Любовь Лучистая, диплом йога-тичера, опыт с 2017 года.">
+<title>Йога с Любовью — онлайн-клуб йоги | Любовь Лучистая</title>
+<meta name="description" content="Камерный онлайн-клуб йоги. Живые эфиры дважды в неделю, личная поддержка, архив 90+ записей. Пробные зарядки бесплатно. Преподаватель — Любовь Лучистая, диплом йога-тичера, опыт с 2017 года.">
 <meta name="keywords" content="йога онлайн, хатха-йога, йога для начинающих, йога дома, онлайн-клуб йоги, йога для женщин">
 <link rel="canonical" href="https://lubov-yoga.ru/">
 
 <meta property="og:type" content="website">
 <meta property="og:title" content="Йога с Любовью — онлайн-клуб хатха-йоги">
-<meta property="og:description" content="Камерный клуб, где я знаю каждую участницу. Живые эфиры, личная поддержка, бережный подход. Попробуйте бесплатно.">
+<meta property="og:description" content="Камерный клуб, где я знаю каждого участника. Живые эфиры, личная поддержка, бережный подход. Попробуйте бесплатно.">
 <meta property="og:image" content="https://lubov-yoga.ru/images/hero-banner.png">
 <meta property="og:locale" content="ru_RU">
 
@@ -34,7 +34,7 @@
     "name": "Подписка на онлайн-клуб",
     "price": "3500",
     "priceCurrency": "RUB",
-    "description": "Месячная подписка: 2 живых эфира в неделю, архив 30+ записей, личная поддержка"
+    "description": "Месячная подписка: 2 живых эфира в неделю, архив 90+ записей, личная поддержка"
   }
 }
 </script>
@@ -860,6 +860,13 @@ section { padding: 120px 0; position: relative; }
   margin-top: 60px;
 }
 
+.testimonials-grid .testimonial:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+  max-width: 680px;
+  margin: 0 auto;
+  width: 100%;
+}
+
 .testimonial {
   background: var(--paper-warm);
   padding: 44px 40px;
@@ -1101,34 +1108,34 @@ section { padding: 120px 0; position: relative; }
 
 /* ====== TRIAL CTA ====== */
 .trial-cta {
-  background: var(--paper-warm);
+  background: var(--emerald-deep);
+  background-image: url('images/hero-sparkles.jpg');
+  background-size: cover;
+  background-position: center;
   text-align: center;
   position: relative;
   overflow: hidden;
 }
 
-.trial-cta::before, .trial-cta::after {
+.trial-cta::before {
   content: '';
   position: absolute;
-  width: 280px;
-  height: 280px;
-  border-radius: 50%;
-  filter: blur(100px);
-  opacity: 0.5;
+  inset: 0;
+  background: rgba(15,42,35,0.72);
   pointer-events: none;
 }
 
-.trial-cta::before {
-  top: 15%;
-  left: 8%;
-  background: var(--gold);
+.trial-cta::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(232,194,112,0.12) 0%, transparent 70%);
+  pointer-events: none;
 }
 
-.trial-cta::after {
-  bottom: 15%;
-  right: 8%;
-  background: var(--emerald-soft);
-}
+.trial-cta h2 { color: var(--paper); }
+.trial-cta .section-eyebrow { color: var(--gold); border-bottom-color: rgba(232,194,112,0.4); }
+.trial-cta > .container > .trial-inner > p { color: rgba(244,236,216,0.82); }
 
 .trial-inner {
   position: relative;
@@ -1169,7 +1176,7 @@ section { padding: 120px 0; position: relative; }
 
 .trial-features span {
   font-size: 13px;
-  color: var(--emerald-deep);
+  color: rgba(244,236,216,0.85);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1182,7 +1189,7 @@ section { padding: 120px 0; position: relative; }
   content: '';
   width: 6px;
   height: 6px;
-  background: var(--gold-warm);
+  background: var(--gold);
   border-radius: 50%;
 }
 
@@ -1390,19 +1397,19 @@ section { padding: 120px 0; position: relative; }
 <section class="hero" aria-label="Главный экран">
   <div class="container">
     <div class="hero-content">
-      <span class="hero-eyebrow">Камерный онлайн-клуб хатха-йоги</span>
+      <span class="hero-eyebrow">Камерный онлайн-клуб йоги</span>
       <h1>Практика, которая возвращает <span class="script">тело себе</span></h1>
       <p class="hero-lead">
-        Живые занятия по хатха-йоге дважды в неделю прямо у вас дома. Я вижу каждую через вторую камеру и поправляю — это не запись на YouTube, это живой преподаватель рядом.
+        Живые занятия по хатха-йоге дважды в неделю прямо у вас дома. Я вижу каждого участника на экране ноутбука и поправляю — это не запись на YouTube, это живой преподаватель рядом.
       </p>
       <div class="hero-ctas">
         <a href="#trial" class="btn-primary">Получить пробные зарядки</a>
         <a href="#about" class="btn-ghost-light">Узнать о клубе</a>
       </div>
       <div class="hero-meta">
-        <div>Бесплатно</div>
-        <div>Без оплаты карты</div>
+        <div>Оплата картой</div>
         <div>Доступ сразу</div>
+        <div>Отмена в любое время</div>
       </div>
     </div>
   </div>
@@ -1417,7 +1424,7 @@ section { padding: 120px 0; position: relative; }
   <div class="container">
     <span class="section-eyebrow">Если что-то знакомо</span>
     <h2 class="section-title">Это для <span class="script">вас</span></h2>
-    <p class="section-lead">Большинство женщин, которые приходят в клуб, говорят одно и то же. Если узнаёте себя — вы по адресу.</p>
+    <p class="section-lead">Большинство участников, которые приходят в клуб, говорят одно и то же. Если узнаёте себя — вы по адресу.</p>
 
     <div class="pains-grid">
       <article class="pain-card">
@@ -1429,10 +1436,10 @@ section { padding: 120px 0; position: relative; }
       </article>
 
       <article class="pain-card">
-        <p class="pain-quote">Я не гибкая, наверное, йога не для меня.</p>
+        <p class="pain-quote">Я не гибкий, наверное, йога не для меня.</p>
         <div class="pain-answer">
           <strong>Гибкость — результат, а не вход</strong>
-          Моя задача не запихать вас в идеальную форму, а подобрать форму под ваше тело. Покажу упрощения и усложнения для каждой асаны.
+          Моя задача не запихать тебя в идеальную форму, а подобрать форму под твоё тело. Объясню как адаптировать асану и нагрузку под тебя.
         </div>
       </article>
 
@@ -1451,7 +1458,7 @@ section { padding: 120px 0; position: relative; }
 <section class="solution" id="club" aria-label="Что такое клуб">
   <div class="container">
     <span class="section-eyebrow">Как устроен клуб</span>
-    <h2 class="section-title">Не курс. Не марафон. Регулярная <span class="script">практика</span>, в которой вы не одна.</h2>
+    <h2 class="section-title">Не курс. Не марафон. Регулярная <span class="script">практика</span>, в которой ты не один на один с экраном.</h2>
     <p class="section-lead">Клуб — это формат, который заменяет поход в студию. Только без пробок и без необходимости куда-то ехать после работы.</p>
 
     <div class="solution-grid">
@@ -1463,14 +1470,14 @@ section { padding: 120px 0; position: relative; }
 
       <div class="solution-card">
         <span class="solution-num">— 02 —</span>
-        <h3>Архив 30+ записей</h3>
+        <h3>Архив 90+ записей</h3>
         <p>Все эфиры доступны в телеграм-канале клуба. Можно заниматься в любое удобное время по уже изученным комплексам.</p>
       </div>
 
       <div class="solution-card">
         <span class="solution-num">— 03 —</span>
         <h3>Личная поддержка</h3>
-        <p>Можно задать любой вопрос в личке. Я отвечаю сама — никаких ассистентов и автоответов. Маленькая группа, чтобы я успевала к каждой.</p>
+        <p>Можно задать любой вопрос в личке. Я отвечаю сама — никаких ассистентов и автоответов. Маленькая группа, чтобы я успевала за каждым.</p>
       </div>
     </div>
 
@@ -1478,7 +1485,7 @@ section { padding: 120px 0; position: relative; }
       <div class="tech-detail-text">
         <span class="script">маленький секрет формата</span>
         <h3>Я подключаюсь с двух устройств — и это меняет всё</h3>
-        <p>Одна камера показывает меня, чтобы вы чётко видели технику. На втором устройстве я вижу окошки всех участниц крупно — и могу поправить, если что-то идёт не так. В обычных онлайн-занятиях преподаватель не видит вас. Здесь — видит.</p>
+        <p>Одна камера показывает меня, чтобы вы чётко видели технику. На втором устройстве я вижу окошки всех участников — и могу поправить, если что-то идёт не так. В обычных видеоуроках преподаватель не видит вас. Здесь — я всё вижу.</p>
       </div>
       <div class="tech-detail-visual" role="img" aria-label="Любовь Лучистая в асане Бакасана"></div>
     </div>
@@ -1496,8 +1503,8 @@ section { padding: 120px 0; position: relative; }
       </div>
 
       <div class="about-text">
-        <span class="section-eyebrow">Здравствуйте</span>
-        <h2 class="section-title">Меня зовут <span class="script">Любовь</span></h2>
+        <span class="section-eyebrow">Приветствую</span>
+        <h2 class="section-title">Меня зовут <span class="script">Любовь Лучистая</span></h2>
 
         <p class="lead">
           Я преподаю хатха-йогу с 2017 года. Раскатываю коврик примерно 360 раз в году — для меня это давно не хобби, а способ быть в контакте с собой.
@@ -1567,17 +1574,50 @@ section { padding: 120px 0; position: relative; }
 </section>
 
 <!-- ===== TESTIMONIALS ===== -->
-<section class="testimonials" aria-label="Отзывы участниц">
+<section class="testimonials" aria-label="Отзывы участников">
   <div class="container">
     <span class="section-eyebrow">Что говорят те, кто уже в клубе</span>
-    <h2 class="section-title">Слова <span class="script">участниц</span></h2>
+    <h2 class="section-title">Слова <span class="script">участников</span></h2>
 
     <div class="testimonials-grid">
-      <article class="testimonial testimonial-placeholder">
-        Сюда — реальный отзыв<br>от участницы клуба
+      <article class="testimonial">
+        <p>Мне нравится, что я встаю за 10 минут до занятия, надеваю шорты, делаю гульку из волос и… просыпаюсь уже во время разминки. А потом бодрая и гибкая бегу гулять с собачей и на работу. Здорово, что появилось время для себя, без дорожных потерь. Ну, и естественно, я собой потом весь день восхищаюсь — какая я молодец, с УТРА позанималась! В спортзал я бы утром ни за что не выбралась.</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">Е</div>
+          <span>Участница клуба</span>
+        </div>
       </article>
-      <article class="testimonial testimonial-placeholder">
-        Сюда — ещё один отзыв<br>(можно скрин из чата)
+
+      <article class="testimonial">
+        <p>Люба, пишу тебе отзыв… Долго сомневалась — всё-таки онлайн. Но мне очень понравилось! Ходила в спортзал — не проходила и месяца, организм говорил НЕТ. После твоих занятий — ощущение лёгкости! У меня ещё и грыжа в спине, с утра иногда очень тяжело встаёт. Но после твоих занятий — спина говорит мне спасибо!</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">Н</div>
+          <span>Участница клуба</span>
+        </div>
+      </article>
+
+      <article class="testimonial">
+        <p>Люба, привет! Я сделала первое занятие! Мне ОЧЕНЬ!! Нагрузка прям по моей дохлости. Не перенапрягаясь, действительно очень мягко и бережно. При этом — где шевелим, там реально начинает двигаться! Тело кайфануло. Мозг тоже доволен — всё гармонично. Любка, я догадывалась, что ты крутая, а теперь это знаю!</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">А</div>
+          <span>Участница клуба</span>
+        </div>
+      </article>
+
+      <article class="testimonial">
+        <p>Я искала какую-нибудь физкультуру, но так чтобы не нужно час ехать в зал, потом час обратно. И вселенная меня услышала и послала тебя.</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">М</div>
+          <span>Участница клуба</span>
+        </div>
+      </article>
+
+      <article class="testimonial">
+        <p>Чёртова йога приучила тело к хорошему — тянусь на работе как могу, и всё равно мало. Тело сейчас требует внимания!</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">О</div>
+          <span>Участница клуба</span>
+        </div>
       </article>
     </div>
   </div>
@@ -1705,7 +1745,7 @@ section { padding: 120px 0; position: relative; }
     <div class="footer-grid">
       <div class="footer-brand">
         <h3>Йога <span class="script">с Любовью</span></h3>
-        <p>Камерный онлайн-клуб хатха-йоги для женщин, которые хотят заниматься регулярно и не одни. Преподаватель — Любовь Лучистая.</p>
+        <p>Камерный онлайн-клуб йоги, которые хотят заниматься регулярно и не одни. Преподаватель — Любовь Лучистая.</p>
       </div>
       <div class="footer-col">
         <h4>Разделы</h4>
