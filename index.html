@@ -643,7 +643,7 @@ section { padding: 120px 0; position: relative; }
 
 .about-visual {
   aspect-ratio: 3/4;
-  background: url('images/about-pose.jpg') center/cover;
+  background: url('images/portrait.jpg') center top/cover;
   border-radius: 6px;
   box-shadow: 0 30px 60px -20px rgba(15,42,35,0.3);
   position: relative;
@@ -1109,9 +1109,6 @@ section { padding: 120px 0; position: relative; }
 /* ====== TRIAL CTA ====== */
 .trial-cta {
   background: var(--emerald-deep);
-  background-image: url('images/hero-sparkles.jpg');
-  background-size: cover;
-  background-position: center;
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -1120,16 +1117,24 @@ section { padding: 120px 0; position: relative; }
 .trial-cta::before {
   content: '';
   position: absolute;
-  inset: 0;
-  background: rgba(15,42,35,0.72);
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 400px;
+  background: radial-gradient(ellipse at center, rgba(232,194,112,0.18) 0%, transparent 70%);
   pointer-events: none;
 }
 
 .trial-cta::after {
   content: '';
   position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at center, rgba(232,194,112,0.12) 0%, transparent 70%);
+  bottom: -80px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 400px;
+  height: 300px;
+  background: radial-gradient(ellipse at center, rgba(61,107,91,0.4) 0%, transparent 70%);
   pointer-events: none;
 }
 
