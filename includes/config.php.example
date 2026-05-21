@@ -1,0 +1,26 @@
+<?php
+// ============================================================
+// ПРИМЕР конфигурации. Скопируйте этот файл как config.php
+// на сервере и заполните реальными данными.
+// НИКОГДА не добавляйте config.php в git!
+// ============================================================
+
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'имя_базы_данных');  // Beget: обычно user_dbname
+define('DB_USER', 'пользователь_бд');
+define('DB_PASS', 'пароль_бд');
+
+define('APP_URL',  'https://lubov-yoga.ru');  // без слеша в конце
+define('APP_ENV',  'production');             // 'production' или 'development'
+
+// SMTP (Beget)
+define('SMTP_HOST',      'smtp.beget.com');
+define('SMTP_USER',      'noreply@lubov-yoga.ru');
+define('SMTP_PASS',      'пароль_почты');
+define('SMTP_PORT',      587);
+define('MAIL_FROM',      'noreply@lubov-yoga.ru');
+define('MAIL_FROM_NAME', 'Клуб йоги Любовь Лучистая');
+
+// Раздельные ключи сессий (не менять после запуска!)
+define('SESSION_USER_KEY',  'lk_user');
+define('SESSION_ADMIN_KEY', 'lk_admin');

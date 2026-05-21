@@ -1,5 +1,10 @@
 User-agent: *
 Allow: /
+Disallow: /cabinet/
+Disallow: /admin/
+Disallow: /api/
+Disallow: /auth/
+Disallow: /includes/
 
 User-agent: GPTBot
 Allow: /

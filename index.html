@@ -69,9 +69,10 @@ h1, h2, h3, h4 {
   background: var(--cream);
   padding: 0 48px;
   height: 64px;
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: 24px;
   align-items: center;
-  justify-content: space-between;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -79,6 +80,7 @@ h1, h2, h3, h4 {
 }
 
 .logo {
+  grid-column: 1 / 4;
   font-family: 'Instrument Serif', serif;
   font-style: italic;
   font-size: 22px;
@@ -88,9 +90,11 @@ h1, h2, h3, h4 {
 }
 
 .site-nav {
+  grid-column: 4 / 13;
   display: flex;
   align-items: center;
   gap: 48px;
+  justify-content: flex-end;
 }
 
 .site-nav a {
@@ -119,11 +123,13 @@ h1, h2, h3, h4 {
 /* ── HERO ── */
 .hero {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: 0;
   min-height: calc(100vh - 64px);
 }
 
 .hero-left {
+  grid-column: 1 / 7;
   background: var(--cream);
   display: flex;
   flex-direction: column;
@@ -201,6 +207,7 @@ h1, h2, h3, h4 {
 }
 
 .hero-right {
+  grid-column: 7 / 13;
   overflow: hidden;
   position: relative;
 }
@@ -999,9 +1006,10 @@ section { padding: 112px 0; }
 
 /* ── RESPONSIVE ── */
 @media (max-width: 1024px) {
-  .hero { grid-template-columns: 1fr; }
-  .hero-left { padding: 64px 40px; min-height: 70vh; }
-  .hero-right { height: 55vw; min-height: 300px; }
+  .hero { grid-template-columns: repeat(12, 1fr); }
+  .hero-left { grid-column: 1 / -1; padding: 64px 40px; min-height: 70vh; }
+  .hero-right { grid-column: 1 / -1; height: 55vw; min-height: 300px; }
+  .site-header { grid-template-columns: repeat(12, 1fr); column-gap: 16px; padding: 0 32px; }
   .about-grid { grid-template-columns: 1fr; gap: 48px; }
   .about-photos { position: static; }
   .pricing-grid { grid-template-columns: 1fr; gap: 44px; }
@@ -1021,6 +1029,7 @@ section { padding: 112px 0; }
   .about-stat + .about-stat { border-left: none; border-top: 1px solid var(--cream-deep); padding-left: 0; }
   .testimonial-wide { padding: 40px 28px; }
   .site-nav a:not(.nav-cta) { display: none; }
+  .site-header { padding: 0 24px; column-gap: 12px; }
   .hero h1 { font-size: 40px; }
 }
 
@@ -1045,6 +1054,7 @@ section { padding: 112px 0; }
     <a href="#club">Практика</a>
     <a href="#about">Обо мне</a>
     <a href="#pricing">Стоимость</a>
+    <a href="/auth/login.php" style="color:var(--ink-soft)">Личный кабинет</a>
     <a href="#trial" class="nav-cta">Попробовать</a>
   </nav>
 </header>
@@ -1366,7 +1376,11 @@ section { padding: 112px 0; }
     </div>
     <div class="footer-bottom">
       <span>© 2026 Любовь Лучистая · Онлайн-клуб йоги</span>
-      <span>Йога, которая возвращает тебя к себе</span>
+      <span style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+        <a href="/privacy-policy.php" style="color:inherit;opacity:.6;font-size:13px">Политика конфиденциальности</a>
+        <a href="/public-offer.php" style="color:inherit;opacity:.6;font-size:13px">Публичная оферта</a>
+        <span style="opacity:.4">Йога, которая возвращает тебя к себе</span>
+      </span>
     </div>
   </div>
 </footer>

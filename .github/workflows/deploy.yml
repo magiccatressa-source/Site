@@ -1,0 +1,22 @@
+name: Deploy to Beget
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy via rsync
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avzr --delete --exclude='.git*' --exclude='.DS_Store' --exclude='includes/config.php'
+          path: ./
+          remote_path: /home/focuspkp/luchistaya-yoga.ru/public_html/
+          remote_host: focuspkp.beget.tech
+          remote_user: focuspkp
+          remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
