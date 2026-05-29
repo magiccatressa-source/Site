@@ -16,7 +16,7 @@ jobs:
         with:
           switches: -avzr --delete --exclude='.git*' --exclude='.DS_Store' --exclude='includes/config.php'
           path: ./
-          remote_path: /home/focuspkp/luchistaya-yoga.ru/public_html/
+          remote_path: /home/f/focuspkp/luchistaya-yoga.ru/public_html/
           remote_host: focuspkp.beget.tech
           remote_user: focuspkp
           remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
