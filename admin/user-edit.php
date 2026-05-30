@@ -26,7 +26,7 @@ $logRows = db()->prepare(
 $logRows->execute([$userId]);
 $logs = $logRows->fetchAll();
 
-function statusLabel(?array $sub): string {
+function statusLabel($sub): string {
     if (!$sub || in_array($sub['status'], ['inactive','expired'])) return 'Не активна';
     if ($sub['status'] === 'trial') return 'Пробный доступ';
     if ($sub['is_paused']) return 'На паузе';
