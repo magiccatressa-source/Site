@@ -27,7 +27,8 @@ $tgChat     = setting('telegram_chat_link');
 $schedule   = setting('schedule_text');
 $welcomeId  = setting('welcome_kinescope_id');
 $welcomeTxt = setting('welcome_text');
-$hasAccess  = has_active_access($sub);
+$hasAccess   = has_active_access($sub);
+$lessonCount = db()->query('SELECT COUNT(*) FROM lessons WHERE is_published = 1')->fetchColumn();
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -147,7 +148,7 @@ $hasAccess  = has_active_access($sub);
       Уроки доступны при активной подписке
     </p>
     <p style="color:var(--muted); font-size:14px; margin-bottom:20px">
-      Оплатите подписку и получите доступ к архиву 90+ уроков йоги
+      Оплатите подписку и получите доступ к архиву <?= $lessonCount > 0 ? $lessonCount . '+' : '' ?> уроков йоги
     </p>
     <a href="https://t.me/indicatrisa" target="_blank" class="btn btn-primary">
       Оформить подписку

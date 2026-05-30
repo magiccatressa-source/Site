@@ -41,7 +41,7 @@ $totalCount = (int)$total->fetchColumn();
 $totalPages = max(1, ceil($totalCount / $perPage));
 
 $stmt = db()->prepare(
-    "SELECT u.id, u.name, u.last_name, u.email, u.phone, u.social_link, u.created_at, u.email_verified,
+    "SELECT u.id, u.name, u.last_name, u.email, u.phone, u.vk_url, u.tg_url, u.created_at, u.email_verified,
             s.status AS sub_status, s.is_paused, s.payment_status, s.expires_at
      FROM users u
      LEFT JOIN subscriptions s ON s.user_id = u.id AND s.id = (

@@ -66,10 +66,23 @@ $subStatus = subscription_display_status($sub);
         <input class="form-control" type="tel" name="phone"
                value="<?= htmlspecialchars($user['phone'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
       </div>
-      <div class="form-group">
-        <label>ВКонтакте или Telegram</label>
-        <input class="form-control" type="url" name="social_link"
-               value="<?= htmlspecialchars($user['social_link'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+      <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
+        <div class="form-group">
+          <label>ВКонтакте</label>
+          <div style="display:flex; align-items:center">
+            <span style="background:var(--cream-deep);border:1px solid #ccc;border-right:none;padding:8px 10px;border-radius:6px 0 0 6px;font-size:14px;color:var(--muted);white-space:nowrap">vk.com/</span>
+            <input class="form-control" type="text" name="vk_nick" placeholder="ваш_ник" style="border-radius:0 6px 6px 0"
+                   value="<?= htmlspecialchars(ltrim(str_replace('https://vk.com/', '', $user['vk_url'] ?? ''), '/'), ENT_QUOTES, 'UTF-8') ?>">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Telegram</label>
+          <div style="display:flex; align-items:center">
+            <span style="background:var(--cream-deep);border:1px solid #ccc;border-right:none;padding:8px 10px;border-radius:6px 0 0 6px;font-size:14px;color:var(--muted);white-space:nowrap">t.me/</span>
+            <input class="form-control" type="text" name="tg_nick" placeholder="ваш_ник" style="border-radius:0 6px 6px 0"
+                   value="<?= htmlspecialchars(ltrim(str_replace('https://t.me/', '', $user['tg_url'] ?? ''), '/'), ENT_QUOTES, 'UTF-8') ?>">
+          </div>
+        </div>
       </div>
       <button type="submit" class="btn btn-primary btn-sm" id="saveProfileBtn">Сохранить</button>
     </form>
@@ -148,7 +161,8 @@ profileForm.addEventListener('submit', async (e) => {
         name:        profileForm.querySelector('[name=name]').value.trim(),
         last_name:   profileForm.querySelector('[name=last_name]').value.trim(),
         phone:       profileForm.querySelector('[name=phone]').value.trim(),
-        social_link: profileForm.querySelector('[name=social_link]').value.trim(),
+        vk_nick: profileForm.querySelector('[name=vk_nick]').value.trim(),
+        tg_nick: profileForm.querySelector('[name=tg_nick]').value.trim(),
       }),
     });
     const data = await res.json();

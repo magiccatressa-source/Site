@@ -8,7 +8,7 @@ header('Content-Type: application/json; charset=utf-8');
 $user = require_login();
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $s = db()->prepare('SELECT id, name, last_name, email, phone, social_link FROM users WHERE id = ?');
+    $s = db()->prepare('SELECT id, name, last_name, email, phone, vk_url, tg_url FROM users WHERE id = ?');
     $s->execute([$user['id']]);
     json_ok(['user' => $s->fetch()]);
 }
@@ -20,7 +20,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT' || $_SERVER['REQUEST_METHOD'] === 'POST
     $name        = trim($data['name'] ?? '');
     $last_name   = trim($data['last_name'] ?? '');
     $phone       = trim($data['phone'] ?? '');
-    $social_link = trim($data['social_link'] ?? '');
+    $vk_nick = preg_replace('/[^a-zA-Z0-9_.\-]/', '', $data['vk_nick'] ?? '');
+    $tg_nick = preg_replace('/[^a-zA-Z0-9_.\-]/', '', $data['tg_nick'] ?? '');
+    $vk_url  = $vk_nick ? 'https://vk.com/' . $vk_nick : null;
+    $tg_url  = $tg_nick ? 'https://t.me/' . $tg_nick : null;
 
     if (mb_strlen($name) < 2) json_err('name_too_short');
 
@@ -39,12 +42,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT' || $_SERVER['REQUEST_METHOD'] === 'POST
     }
 
     db()->prepare(
-        'UPDATE users SET name = ?, last_name = ?, phone = ?, social_link = ? WHERE id = ?'
+        'UPDATE users SET name = ?, last_name = ?, phone = ?, vk_url = ?, tg_url = ? WHERE id = ?'
     )->execute([
         $name,
         $last_name ?: null,
         $phone ?: null,
-        $social_link ?: null,
+        $vk_url,
+        $tg_url,
         $user['id'],
     ]);
 

@@ -16,7 +16,10 @@ $name         = trim($data['name'] ?? '');
 $last_name    = trim($data['last_name'] ?? '');
 $email        = strtolower(trim($data['email'] ?? ''));
 $password     = $data['password'] ?? '';
-$social_link  = trim($data['social_link'] ?? '');
+$vk_nick = preg_replace('/[^a-zA-Z0-9_.\-]/', '', $data['vk_nick'] ?? '');
+$tg_nick = preg_replace('/[^a-zA-Z0-9_.\-]/', '', $data['tg_nick'] ?? '');
+$vk_url  = $vk_nick ? 'https://vk.com/' . $vk_nick : null;
+$tg_url  = $tg_nick ? 'https://t.me/' . $tg_nick : null;
 $consent_pd   = !empty($data['consent_pd']);
 $consent_offer = !empty($data['consent_offer']);
 
@@ -42,16 +45,17 @@ $ip           = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '
 
 db()->prepare(
     'INSERT INTO users
-     (name, last_name, email, password_hash, social_link,
+     (name, last_name, email, password_hash, vk_url, tg_url,
       email_verify_token, email_verify_expires,
       consent_pd, consent_offer, consent_at, consent_ip)
-     VALUES (?, ?, ?, ?, ?, ?, ?, 1, 1, NOW(), ?)'
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, 1, NOW(), ?)'
 )->execute([
     $name,
     $last_name ?: null,
     $email,
     password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]),
-    $social_link ?: null,
+    $vk_url,
+    $tg_url,
     $token_hash,
     $token_expires,
     $ip,

@@ -38,7 +38,7 @@ function current_user(): ?array {
     if (empty($_SESSION['user_id'])) {
         return null;
     }
-    $s = db()->prepare('SELECT id, name, last_name, email, phone, social_link, role FROM users WHERE id = ?');
+    $s = db()->prepare('SELECT id, name, last_name, email, phone, vk_url, tg_url, role FROM users WHERE id = ?');
     $s->execute([$_SESSION['user_id']]);
     return $s->fetch() ?: null;
 }

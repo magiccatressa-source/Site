@@ -44,11 +44,23 @@ if (!empty($_SESSION['user_id'])) {
         <label for="email">Email <span style="color:var(--marsala)">*</span></label>
         <input class="form-control" type="email" id="email" name="email" required autocomplete="email">
       </div>
-      <div class="form-group">
-        <label for="social_link">Ссылка на ВКонтакте или Telegram</label>
-        <input class="form-control" type="url" id="social_link" name="social_link" placeholder="https://vk.com/... или https://t.me/...">
-        <p class="form-hint">Необязательно — помогает мне вас найти</p>
+      <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
+        <div class="form-group">
+          <label for="vk_nick">ВКонтакте</label>
+          <div style="display:flex; align-items:center; gap:0">
+            <span style="background:var(--cream-deep);border:1px solid #ccc;border-right:none;padding:8px 10px;border-radius:6px 0 0 6px;font-size:14px;color:var(--muted);white-space:nowrap">vk.com/</span>
+            <input class="form-control" type="text" id="vk_nick" name="vk_nick" placeholder="ваш_ник" style="border-radius:0 6px 6px 0">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="tg_nick">Telegram</label>
+          <div style="display:flex; align-items:center; gap:0">
+            <span style="background:var(--cream-deep);border:1px solid #ccc;border-right:none;padding:8px 10px;border-radius:6px 0 0 6px;font-size:14px;color:var(--muted);white-space:nowrap">t.me/</span>
+            <input class="form-control" type="text" id="tg_nick" name="tg_nick" placeholder="ваш_ник" style="border-radius:0 6px 6px 0">
+          </div>
+        </div>
       </div>
+      <p class="form-hint" style="margin-top:-8px">Необязательно — помогает мне вас найти</p>
       <div class="form-group">
         <label for="password">Пароль <span style="color:var(--marsala)">*</span></label>
         <input class="form-control" type="password" id="password" name="password" required autocomplete="new-password" minlength="8">
@@ -123,7 +135,8 @@ form.addEventListener('submit', async (e) => {
         last_name:     form.last_name.value.trim(),
         email:         form.email.value.trim(),
         password:      form.password.value,
-        social_link:   form.social_link.value.trim(),
+        vk_nick:       form.vk_nick.value.trim(),
+        tg_nick:       form.tg_nick.value.trim(),
         consent_pd:    form.consent_pd.checked,
         consent_offer: form.consent_offer.checked,
       }),

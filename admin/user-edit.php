@@ -60,7 +60,8 @@ function statusLabel(?array $sub): string {
           <tr><td style="color:var(--muted);padding:4px 0;width:110px">Имя</td><td><?= htmlspecialchars($user['name'] . ' ' . ($user['last_name'] ?? ''), ENT_QUOTES, 'UTF-8') ?></td></tr>
           <tr><td style="color:var(--muted);padding:4px 0">Email</td><td><?= htmlspecialchars($user['email'], ENT_QUOTES, 'UTF-8') ?><?= !$user['email_verified'] ? ' <span style="color:var(--warning);font-size:11px">⚠ не подтверждён</span>' : '' ?></td></tr>
           <tr><td style="color:var(--muted);padding:4px 0">Телефон</td><td><?= htmlspecialchars($user['phone'] ?? '—', ENT_QUOTES, 'UTF-8') ?></td></tr>
-          <tr><td style="color:var(--muted);padding:4px 0">Соцсети</td><td><?= $user['social_link'] ? '<a href="'.htmlspecialchars($user['social_link'], ENT_QUOTES, 'UTF-8').'" target="_blank">'.htmlspecialchars($user['social_link'], ENT_QUOTES, 'UTF-8').'</a>' : '—' ?></td></tr>
+          <tr><td style="color:var(--muted);padding:4px 0">ВКонтакте</td><td><?= $user['vk_url'] ? '<a href="'.htmlspecialchars($user['vk_url'], ENT_QUOTES, 'UTF-8').'" target="_blank">'.htmlspecialchars($user['vk_url'], ENT_QUOTES, 'UTF-8').'</a>' : '—' ?></td></tr>
+          <tr><td style="color:var(--muted);padding:4px 0">Telegram</td><td><?= $user['tg_url'] ? '<a href="'.htmlspecialchars($user['tg_url'], ENT_QUOTES, 'UTF-8').'" target="_blank">'.htmlspecialchars($user['tg_url'], ENT_QUOTES, 'UTF-8').'</a>' : '—' ?></td></tr>
           <tr><td style="color:var(--muted);padding:4px 0">Регистрация</td><td><?= date('d.m.Y H:i', strtotime($user['created_at'])) ?></td></tr>
         </table>
       </div>
