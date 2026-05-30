@@ -28,7 +28,7 @@ $schedule   = setting('schedule_text');
 $welcomeId  = setting('welcome_kinescope_id');
 $welcomeTxt = setting('welcome_text');
 $hasAccess   = has_active_access($sub);
-$lessonCount = db()->query('SELECT COUNT(*) FROM lessons WHERE is_published = 1')->fetchColumn();
+$lessonCount = db()->query('SELECT COUNT(*) FROM lessons WHERE is_visible = 1')->fetchColumn();
 ?>
 <!DOCTYPE html>
 <html lang="ru">
