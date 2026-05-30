@@ -1,20 +1,31 @@
 <?php
 /**
  * Скрипт создания администратора.
- * Запустить ОДИН РАЗ на сервере через SSH или Beget SSH-консоль:
+ * Запустить ОДИН РАЗ на сервере через SSH:
  *
- *   php /home/focuspkp/luchistaya-yoga.ru/public_html/db/seed-admin.php
+ *   php /home/focuspkp/luchistaya-yoga.ru/public_html/db/seed-admin.php ВАШ_ПАРОЛЬ
  *
- * После выполнения УДАЛИТЕ этот файл с сервера!
+ * После выполнения УДАЛИТЕ этот файл с сервера:
+ *   rm /home/focuspkp/luchistaya-yoga.ru/public_html/db/seed-admin.php
  */
+
+if (php_sapi_name() !== 'cli') {
+    http_response_code(403);
+    exit('Forbidden');
+}
+
+if ($argc < 2 || strlen(trim($argv[1])) < 10) {
+    fwrite(STDERR, "Использование: php seed-admin.php ВАШ_ПАРОЛЬ\n");
+    fwrite(STDERR, "Пароль должен быть не короче 10 символов.\n");
+    exit(1);
+}
 
 require_once __DIR__ . '/../includes/db.php';
 
 $email    = 'admin@lubov-yoga.ru';
-$password = 'Yoga2026!Luchistaya#';
+$password = trim($argv[1]);
 $name     = 'Любовь';
 
-// Check if admin already exists
 $s = db()->prepare('SELECT id FROM users WHERE email = ?');
 $s->execute([$email]);
 if ($s->fetch()) {
@@ -30,7 +41,6 @@ db()->prepare(
 )->execute([$name, $email, $hash]);
 
 echo "✓ Администратор создан.\n";
-echo "  Логин:  $email\n";
-echo "  Пароль: $password\n";
-echo "\nУДАЛИТЕ ЭТОТ ФАЙЛ С СЕРВЕРА!\n";
+echo "  Логин: $email\n";
+echo "\nУДАЛИТЕ ЭТОТ ФАЙЛ С СЕРВЕРА:\n";
 echo "  rm /home/focuspkp/luchistaya-yoga.ru/public_html/db/seed-admin.php\n";
