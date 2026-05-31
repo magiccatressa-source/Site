@@ -155,8 +155,14 @@ async function loadLessons(topicId) {
   const data = await res.json();
   if (!data.ok) { container.innerHTML = '<p style="color:var(--danger)">Ошибка загрузки</p>'; return; }
 
-  let html = data.lessons.map(l => `
+  let html = data.lessons.map((l, idx) => `
     <div class="lesson-row" data-id="${l.id}">
+      <div style="display:flex;flex-direction:column;gap:2px;margin-right:4px">
+        <button class="btn btn-ghost btn-sm" style="padding:0 6px;font-size:12px;line-height:1.4"
+          onclick="moveLessonUp(${l.id}, ${topicId}, ${idx})" ${idx === 0 ? 'disabled' : ''}>↑</button>
+        <button class="btn btn-ghost btn-sm" style="padding:0 6px;font-size:12px;line-height:1.4"
+          onclick="moveLessonDown(${l.id}, ${topicId}, ${idx})" ${idx === data.lessons.length - 1 ? 'disabled' : ''}>↓</button>
+      </div>
       <span style="flex:1;font-size:14px">${escHtml(l.title)}</span>
       ${l.duration_min ? `<span style="font-size:12px;color:var(--muted)">${l.duration_min} мин</span>` : ''}
       ${!l.is_visible ? '<span class="badge badge-inactive" style="font-size:10px">скрыт</span>' : ''}
@@ -226,6 +232,27 @@ async function saveLesson() {
     alertEl.textContent = res.error || 'Ошибка сохранения.';
     alertEl.style.display = 'block';
   }
+}
+
+async function moveLessonUp(lessonId, topicId, idx) {
+  const container = document.getElementById('lessons-' + topicId);
+  const rows = container.querySelectorAll('.lesson-row');
+  if (idx === 0) return;
+  const prevId = parseInt(rows[idx - 1].dataset.id);
+  // swap sort_order: get current sort_orders from DOM data
+  const res1 = await apiPost('/api/admin/lessons.php', 'PUT', { id: lessonId, sort_order: (idx - 1) * 10 });
+  const res2 = await apiPost('/api/admin/lessons.php', 'PUT', { id: prevId, sort_order: idx * 10 });
+  if (res1.ok && res2.ok) loadLessons(topicId);
+}
+
+async function moveLessonDown(lessonId, topicId, idx) {
+  const container = document.getElementById('lessons-' + topicId);
+  const rows = container.querySelectorAll('.lesson-row');
+  if (idx >= rows.length - 1) return;
+  const nextId = parseInt(rows[idx + 1].dataset.id);
+  const res1 = await apiPost('/api/admin/lessons.php', 'PUT', { id: lessonId, sort_order: (idx + 1) * 10 });
+  const res2 = await apiPost('/api/admin/lessons.php', 'PUT', { id: nextId, sort_order: idx * 10 });
+  if (res1.ok && res2.ok) loadLessons(topicId);
 }
 
 async function toggleLessonVisible(lessonId, visible, topicId) {

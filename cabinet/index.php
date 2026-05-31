@@ -256,8 +256,8 @@ function renderTopics(topics) {
     <div class="topic-item" data-id="${topic.id}">
       <div class="topic-header" onclick="toggleTopic(this.parentElement)">
         <div>
-          <h3>${escHtml(topic.title)}${topic.is_current ? ' <span class="topic-current-badge">▶ сейчас изучаем</span>' : ''}</h3>
-          <span class="topic-count">${topic.lessons.length} ${pluralLesson(topic.lessons.length)}</span>
+          <h3>${escHtml(topic.title)}</h3>
+          <span class="topic-count">${topic.lessons.length} ${pluralLesson(topic.lessons.length)}${topic.is_current ? ' &nbsp;<span class="topic-current-badge">сейчас изучаем</span>' : ''}</span>
         </div>
         <span class="topic-toggle">›</span>
       </div>
