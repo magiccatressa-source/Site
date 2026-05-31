@@ -59,22 +59,28 @@ $lessonCount = db()->query('SELECT COUNT(*) FROM lessons WHERE is_visible = 1')-
     Привет, <?= htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8') ?>!
   </h1>
 
-  <?php if ($welcomeId): ?>
-  <!-- Welcome video -->
-  <div class="card" style="margin-bottom:32px">
-    <p class="card-title">Вводное видео</p>
-    <div class="player-wrap">
-      <iframe
-        src="https://kinescope.io/embed/<?= htmlspecialchars($welcomeId, ENT_QUOTES, 'UTF-8') ?>"
-        allow="autoplay; fullscreen; picture-in-picture"
-        allowfullscreen
-      ></iframe>
+  <!-- Lesson catalog — FIRST -->
+  <?php if ($hasAccess): ?>
+  <div id="lessonCatalog" style="margin-bottom:40px">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px">
+      <h2 style="font-size:24px">Уроки</h2>
+      <a href="/cabinet/favorites.php" style="font-size:14px; color:var(--muted)">Избранное →</a>
     </div>
-    <?php if ($welcomeTxt): ?>
-    <p style="margin-top:16px; color:var(--ink-soft); font-size:15px; line-height:1.7">
-      <?= nl2br(htmlspecialchars($welcomeTxt, ENT_QUOTES, 'UTF-8')) ?>
+    <div id="topicsContainer">
+      <p style="color:var(--muted); font-size:14px">Загружаю уроки…</p>
+    </div>
+  </div>
+  <?php else: ?>
+  <div class="card" style="background:var(--cream); border-color:var(--cream-deep); text-align:center; padding:40px; margin-bottom:40px">
+    <p style="font-size:18px; font-family:'Instrument Serif',serif; margin-bottom:12px">
+      Уроки доступны при активной подписке
     </p>
-    <?php endif; ?>
+    <p style="color:var(--muted); font-size:14px; margin-bottom:20px">
+      Оплатите подписку и получите доступ к архиву <?= $lessonCount > 0 ? $lessonCount . '+' : '' ?> уроков йоги
+    </p>
+    <a href="https://t.me/indicatrisa" target="_blank" class="btn btn-primary">
+      Оформить подписку
+    </a>
   </div>
   <?php endif; ?>
 
@@ -131,35 +137,61 @@ $lessonCount = db()->query('SELECT COUNT(*) FROM lessons WHERE is_visible = 1')-
     </a>
   </div>
 
-  <!-- Lesson catalog (only if active access) -->
-  <?php if ($hasAccess): ?>
-  <div id="lessonCatalog">
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px">
-      <h2 style="font-size:24px">Уроки</h2>
-      <a href="/cabinet/favorites.php" style="font-size:14px; color:var(--muted)">Избранное →</a>
+  <?php if ($welcomeId): ?>
+  <!-- Welcome video — hidden after first view -->
+  <div id="welcomeBlock" class="card" style="margin-bottom:32px; display:none">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px">
+      <p class="card-title" style="margin:0">Вводное видео</p>
+      <button onclick="hideWelcome()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted);font-family:inherit">Скрыть ✕</button>
     </div>
-    <div id="topicsContainer">
-      <p style="color:var(--muted); font-size:14px">Загружаю уроки…</p>
+    <div class="player-wrap">
+      <iframe
+        src="https://kinescope.io/embed/<?= htmlspecialchars($welcomeId, ENT_QUOTES, 'UTF-8') ?>"
+        allow="autoplay; fullscreen; picture-in-picture"
+        allowfullscreen
+      ></iframe>
     </div>
-  </div>
-  <?php else: ?>
-  <div class="card" style="background:var(--cream); border-color:var(--cream-deep); text-align:center; padding:40px">
-    <p style="font-size:18px; font-family:'Instrument Serif',serif; margin-bottom:12px">
-      Уроки доступны при активной подписке
+    <?php if ($welcomeTxt): ?>
+    <p style="margin-top:16px; color:var(--ink-soft); font-size:15px; line-height:1.7">
+      <?= nl2br(htmlspecialchars($welcomeTxt, ENT_QUOTES, 'UTF-8')) ?>
     </p>
-    <p style="color:var(--muted); font-size:14px; margin-bottom:20px">
-      Оплатите подписку и получите доступ к архиву <?= $lessonCount > 0 ? $lessonCount . '+' : '' ?> уроков йоги
-    </p>
-    <a href="https://t.me/indicatrisa" target="_blank" class="btn btn-primary">
-      Оформить подписку
-    </a>
+    <?php endif; ?>
   </div>
+  <!-- Link to re-open welcome video -->
+  <p id="welcomeLink" style="display:none; font-size:13px; color:var(--muted); margin-bottom:24px">
+    <a href="#" onclick="showWelcome(); return false;" style="color:var(--muted)">▶ Вводное видео</a>
+  </p>
   <?php endif; ?>
 
 </main>
 
 <script>
 const CSRF = <?= json_encode(csrf_token()) ?>;
+
+// Welcome video: show only on first visit
+<?php if ($welcomeId): ?>
+(function() {
+  const seen = localStorage.getItem('welcomeSeen');
+  const block = document.getElementById('welcomeBlock');
+  const link  = document.getElementById('welcomeLink');
+  if (!seen) {
+    block.style.display = 'block';
+  } else {
+    link.style.display = 'block';
+  }
+})();
+
+function hideWelcome() {
+  localStorage.setItem('welcomeSeen', '1');
+  document.getElementById('welcomeBlock').style.display = 'none';
+  document.getElementById('welcomeLink').style.display = 'block';
+}
+
+function showWelcome() {
+  document.getElementById('welcomeBlock').style.display = 'block';
+  document.getElementById('welcomeLink').style.display = 'none';
+}
+<?php endif; ?>
 
 async function logout() {
   await fetch('/api/auth/logout.php', {
@@ -195,8 +227,11 @@ function renderTopics(topics) {
   container.innerHTML = topics.map(topic => `
     <div class="topic-item" data-id="${topic.id}">
       <div class="topic-header" onclick="toggleTopic(this.parentElement)">
-        <h3>${escHtml(topic.title)}</h3>
-        <span class="topic-toggle">+</span>
+        <div>
+          <h3>${escHtml(topic.title)}</h3>
+          <span class="topic-count">${topic.lessons.length} ${pluralLesson(topic.lessons.length)}</span>
+        </div>
+        <span class="topic-toggle">›</span>
       </div>
       <div class="topic-lessons">
         ${topic.lessons.length
@@ -235,6 +270,13 @@ async function toggleFav(e, lessonId, btn) {
   } catch {
     btn.classList.toggle('active', isActive); // revert on error
   }
+}
+
+function pluralLesson(n) {
+  const mod10 = n % 10, mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return 'урок';
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 'урока';
+  return 'уроков';
 }
 
 function escHtml(s) {
