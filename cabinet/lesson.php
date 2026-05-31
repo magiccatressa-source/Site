@@ -11,6 +11,7 @@ if (!has_active_access($sub)) {
     exit;
 }
 
+$kinescopePassword = setting('kinescope_password');
 $lessonId = (int)($_GET['id'] ?? 0);
 if (!$lessonId) {
     header('Location: /cabinet/');
@@ -89,6 +90,14 @@ $isFavorite = (bool)$favQ->fetch();
     </div>
   </div>
 
+  <?php if ($kinescopePassword): ?>
+  <div style="display:inline-flex;align-items:center;gap:10px;background:var(--cream-deep);border-radius:8px;padding:10px 16px;margin-bottom:20px;font-size:14px">
+    <span style="color:var(--muted)">Пароль для видео:</span>
+    <span id="kinescopePass" style="font-weight:500;letter-spacing:0.03em"><?= htmlspecialchars($kinescopePassword, ENT_QUOTES, 'UTF-8') ?></span>
+    <button onclick="copyPass()" id="copyPassBtn" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--marsala);padding:0;font-family:inherit">Скопировать</button>
+  </div>
+  <?php endif; ?>
+
   <!-- Kinescope Player -->
   <div class="player-wrap" style="margin-bottom:32px">
     <iframe
@@ -165,6 +174,17 @@ async function sendProgress(watchSeconds, completed) {
       document.title = '✓ ' + document.title;
     }
   } catch {}
+}
+
+function copyPass() {
+  const pass = document.getElementById('kinescopePass')?.textContent;
+  if (!pass) return;
+  navigator.clipboard.writeText(pass).then(() => {
+    const btn = document.getElementById('copyPassBtn');
+    btn.textContent = 'Скопировано ✓';
+    btn.style.color = 'var(--success)';
+    setTimeout(() => { btn.textContent = 'Скопировать'; btn.style.color = 'var(--marsala)'; }, 2000);
+  });
 }
 
 // Periodic progress save every 30s

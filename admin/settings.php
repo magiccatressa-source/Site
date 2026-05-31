@@ -55,6 +55,11 @@ $admin = require_admin();
           <p style="font-size:12px;color:var(--muted);margin-top:4px">Только UUID, например: <code>abc123-def456</code> — не полная ссылка</p>
         </div>
         <div class="form-group">
+          <label>Пароль для просмотра видео (Kinescope)</label>
+          <input type="text" class="form-control" name="kinescope_password" id="kinescope_password" placeholder="Пароль от проекта в Кинескопе">
+          <p style="font-size:12px;color:var(--muted);margin-top:4px">Показывается пользователям с кнопкой «Скопировать» на странице каждого урока</p>
+        </div>
+        <div class="form-group">
           <label>Текст под приветственным видео</label>
           <textarea class="form-control" name="welcome_text" id="welcome_text" rows="4"></textarea>
         </div>
@@ -87,7 +92,7 @@ const CSRF = document.querySelector('[name=csrf_token]')?.value ?? '';
 // Load settings
 fetch('/api/admin/settings.php').then(r => r.json()).then(data => {
   if (!data.ok) return;
-  ['zoom_link','telegram_chat_link','schedule_text','welcome_kinescope_id','welcome_text'].forEach(k => {
+  ['zoom_link','telegram_chat_link','schedule_text','welcome_kinescope_id','kinescope_password','welcome_text'].forEach(k => {
     const el = document.getElementById(k);
     if (el) el.value = data[k] || '';
   });
@@ -133,6 +138,7 @@ document.getElementById('welcomeForm').addEventListener('submit', async (e) => {
       headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF },
       body: JSON.stringify({
         welcome_kinescope_id: document.getElementById('welcome_kinescope_id').value.trim(),
+        kinescope_password:   document.getElementById('kinescope_password').value.trim(),
         welcome_text:         document.getElementById('welcome_text').value,
       }),
     });
