@@ -217,6 +217,13 @@ h1, h2, h3, h4 {
 .topic-item {
   border: 1px solid var(--cream-deep);
   margin-bottom: 8px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.topic-item.open {
+  border-left: 3px solid var(--marsala);
 }
 
 .topic-header {
@@ -225,12 +232,12 @@ h1, h2, h3, h4 {
   justify-content: space-between;
   padding: 16px 20px;
   cursor: pointer;
-  background: var(--white);
+  background: var(--cream-deep);
   user-select: none;
   transition: background 0.15s;
 }
 
-.topic-header:hover { background: var(--cream); }
+.topic-header:hover { background: #ddd5bc; }
 
 .topic-header h3 {
   font-size: 17px;
@@ -390,9 +397,9 @@ h1, h2, h3, h4 {
 /* ── Done button ─────────────────────────────────────────── */
 .btn-done {
   display: inline-block;
-  padding: 14px 36px;
+  padding: 18px 56px;
   font-family: 'Instrument Serif', serif;
-  font-size: 18px;
+  font-size: 22px;
   border-radius: 50px;
   border: 2px solid var(--marsala);
   background: transparent;
@@ -400,6 +407,7 @@ h1, h2, h3, h4 {
   cursor: pointer;
   transition: all 0.3s ease;
   letter-spacing: 0.01em;
+  min-width: 260px;
 }
 .btn-done:hover {
   background: var(--marsala);
@@ -407,29 +415,10 @@ h1, h2, h3, h4 {
   transform: scale(1.03);
 }
 .btn-done.done {
-  background: var(--success);
-  border-color: var(--success);
-  color: #fff;
+  background: #2d6a4f !important;
+  border-color: #2d6a4f !important;
+  color: #fff !important;
   transform: scale(1.05);
-}
-
-/* ── Topic beauty ─────────────────────────────────────────── */
-.topic-item {
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-}
-.topic-header {
-  background: var(--cream-deep) !important;
-}
-.topic-header:hover {
-  background: #ddd5bc !important;
-}
-.topic-item.open {
-  border-left: 3px solid var(--marsala);
-}
-.topic-item.open .topic-header {
-  background: var(--cream-deep) !important;
 }
 
 /* ── Lesson checkmark ─────────────────────────────────────── */

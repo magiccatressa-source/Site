@@ -14,11 +14,21 @@ $completed->execute([$user['id']]);
 $completedCount = (int)$completed->fetchColumn();
 
 // Total watch time across ALL sessions including repeats
-$watchRow = db()->prepare(
-    'SELECT COALESCE(SUM(watch_seconds), 0) FROM lesson_views WHERE user_id = ?'
-);
-$watchRow->execute([$user['id']]);
-$totalSeconds = (int)$watchRow->fetchColumn();
+// lesson_views table may not exist yet before migration — fallback gracefully
+try {
+    $watchRow = db()->prepare(
+        'SELECT COALESCE(SUM(watch_seconds), 0) FROM lesson_views WHERE user_id = ?'
+    );
+    $watchRow->execute([$user['id']]);
+    $totalSeconds = (int)$watchRow->fetchColumn();
+} catch (\Exception $e) {
+    // Fallback: sum from lesson_progress until migration is run
+    $watchRow = db()->prepare(
+        'SELECT COALESCE(SUM(watch_seconds), 0) FROM lesson_progress WHERE user_id = ?'
+    );
+    $watchRow->execute([$user['id']]);
+    $totalSeconds = (int)$watchRow->fetchColumn();
+}
 
 // Format hours and minutes
 $hours   = floor($totalSeconds / 3600);

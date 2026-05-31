@@ -112,7 +112,7 @@ $isFavorite = (bool)$favQ->fetch();
   <div style="text-align:center; margin-bottom:32px">
     <button id="doneBtn" class="btn-done<?= $isCompleted ? ' done' : '' ?>"
             onclick="toggleDone()">
-      <?= $isCompleted ? '✓ Сделано!' : 'Я позанималась / позанимался!' ?>
+      <?= $isCompleted ? '✓ Сделано!' : 'Сделано!' ?>
     </button>
   </div>
 
@@ -194,7 +194,7 @@ async function toggleDone() {
   isDone = !isDone;
   const btn = document.getElementById('doneBtn');
   btn.classList.toggle('done', isDone);
-  btn.textContent = isDone ? '✓ Сделано!' : 'Я позанималась / позанимался!';
+  btn.textContent = isDone ? '✓ Сделано!' : 'Сделано!';
   if (isDone) launchConfetti();
   try {
     await fetch('/api/cabinet/progress.php', {
