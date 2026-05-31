@@ -144,10 +144,35 @@ $lessonCount = db()->query('SELECT COUNT(*) FROM lessons WHERE is_visible = 1')-
       </span>
       <?php endif; ?>
     </div>
-    <a href="https://t.me/indicatrisa" target="_blank" rel="noopener"
-       class="btn btn-primary btn-sm">
-      Оплатить подписку ↗
-    </a>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <a href="https://t.me/indicatrisa" target="_blank" rel="noopener"
+         class="btn btn-primary btn-sm">
+        Оплатить подписку ↗
+      </a>
+      <?php if ($hasAccess): ?>
+      <button class="btn btn-outline btn-sm" onclick="document.getElementById('pauseForm').style.display='block';this.style.display='none'">
+        ⏸ Заморозить
+      </button>
+      <?php endif; ?>
+    </div>
+    <?php if ($hasAccess): ?>
+    <div id="pauseForm" style="display:none;margin-top:16px;padding:16px;background:var(--cream-deep);border-radius:8px">
+      <p style="font-size:14px;margin-bottom:12px;color:var(--ink-soft)">Заявка на заморозку подписки — я рассмотрю и продлю вашу подписку на указанное количество дней</p>
+      <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+        <div>
+          <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px">Количество дней</label>
+          <input type="number" id="pauseDays" value="7" min="1" max="90" class="form-control" style="width:80px">
+        </div>
+        <div style="flex:1;min-width:160px">
+          <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px">Причина (необязательно)</label>
+          <input type="text" id="pauseReason" class="form-control" placeholder="Отпуск, болезнь...">
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="submitPause()">Отправить заявку</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('pauseForm').style.display='none'">Отмена</button>
+      </div>
+      <p id="pauseResult" style="display:none;margin-top:10px;font-size:13px"></p>
+    </div>
+    <?php endif; ?>
   </div>
 
   <?php if ($welcomeId): ?>
@@ -297,6 +322,37 @@ async function toggleFav(e, lessonId, btn) {
     });
   } catch {
     btn.classList.toggle('active', isActive); // revert on error
+  }
+}
+
+async function submitPause() {
+  const days   = parseInt(document.getElementById('pauseDays').value);
+  const reason = document.getElementById('pauseReason').value.trim();
+  const result = document.getElementById('pauseResult');
+  if (!days || days < 1) return;
+  try {
+    const res = await fetch('/api/cabinet/pause-request.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF },
+      body: JSON.stringify({ days, reason }),
+    });
+    const data = await res.json();
+    result.style.display = 'block';
+    if (data.ok) {
+      result.style.color = 'var(--success)';
+      result.textContent = '✓ Заявка отправлена - рассмотрю и продлю подписку в ближайшее время';
+      document.querySelector('#pauseForm button[onclick="submitPause()"]').disabled = true;
+    } else if (data.error === 'pending_request_exists') {
+      result.style.color = 'var(--muted)';
+      result.textContent = 'У вас уже есть ожидающая заявка';
+    } else {
+      result.style.color = 'var(--danger)';
+      result.textContent = 'Ошибка. Попробуйте позже или напишите мне напрямую';
+    }
+  } catch {
+    result.style.display = 'block';
+    result.style.color = 'var(--danger)';
+    result.textContent = 'Ошибка соединения';
   }
 }
 

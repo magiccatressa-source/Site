@@ -819,6 +819,44 @@ section { padding: 112px 0; }
   line-height: 1.55;
 }
 
+.price-extras {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.price-extra-item {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 16px 20px;
+  background: var(--cream);
+  border-radius: 6px;
+}
+
+.price-extra-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.price-extra-item strong {
+  display: block;
+  font-family: 'Instrument Serif', serif;
+  font-size: 17px;
+  font-weight: 400;
+  margin-bottom: 4px;
+  color: var(--ink);
+}
+
+.price-extra-item p {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
 /* ── TRIAL CTA ── */
 .trial-cta {
   background: var(--marsala);
@@ -944,7 +982,7 @@ section { padding: 112px 0; }
 
 /* ── FOOTER ── */
 .site-footer {
-  background: var(--ink);
+  background: var(--moss);
   color: var(--cream);
   padding: 72px 0 36px;
 }
@@ -1290,6 +1328,29 @@ section { padding: 112px 0; }
         <div class="price-quote-block">
           <p>Меньше чашки кофе в день за час практики с живым преподавателем, который вас видит и поправляет</p>
         </div>
+        <div class="price-extras">
+          <div class="price-extra-item">
+            <span class="price-extra-icon">↩</span>
+            <div>
+              <strong>Гарантия возврата</strong>
+              <p>Если после первого занятия поймёте, что не ваше - верну деньги без вопросов</p>
+            </div>
+          </div>
+          <div class="price-extra-item">
+            <span class="price-extra-icon">🤝</span>
+            <div>
+              <strong>Рассрочка или отсрочка</strong>
+              <p>Нужна отсрочка или рассрочка - ноль проблем, просто напишите мне. Доверяю людям и даю отсрочки без всяких банков, под честное слово</p>
+            </div>
+          </div>
+          <div class="price-extra-item">
+            <span class="price-extra-icon">⏸</span>
+            <div>
+              <strong>Заморозка подписки</strong>
+              <p>Уходите в отпуск или заболели - напишите мне, поставим подписку на паузу. Дни не сгорят</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1370,9 +1431,8 @@ section { padding: 112px 0; }
       </div>
       <div class="footer-col">
         <h4>Связаться</h4>
-        <a href="https://t.me/lubov_yoga" target="_blank" rel="noopener">Telegram-канал</a>
-        <a href="https://t.me/lubov_yoga_bot" target="_blank" rel="noopener">Telegram-бот</a>
-        <a href="mailto:hello@lubov-yoga.ru">hello@lubov-yoga.ru</a>
+        <a href="https://t.me/indicatrisa" target="_blank" rel="noopener">Telegram личка</a>
+        <a href="https://vk.ru/lubov.yoga" target="_blank" rel="noopener">ВКонтакте</a>
       </div>
     </div>
     <div class="footer-bottom">
@@ -1380,7 +1440,7 @@ section { padding: 112px 0; }
       <span style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
         <a href="/privacy-policy.php" style="color:inherit;opacity:.6;font-size:13px">Политика конфиденциальности</a>
         <a href="/public-offer.php" style="color:inherit;opacity:.6;font-size:13px">Публичная оферта</a>
-        <span style="opacity:.4">Йога, которая возвращает тебя к себе</span>
+        <span style="opacity:.7;font-style:italic">Йога, которая возвращает тебя к себе</span>
       </span>
     </div>
   </div>

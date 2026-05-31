@@ -67,6 +67,12 @@ $admin = require_admin();
       </form>
     </div>
 
+    <!-- Pause requests -->
+    <div class="acard" id="pauseRequestsCard">
+      <div class="acard-title">Заявки на заморозку</div>
+      <div id="pauseList"><p style="font-size:13px;color:var(--muted)">Загрузка…</p></div>
+    </div>
+
     <!-- Bulk extend -->
     <div class="acard" style="border-color:var(--marsala)">
       <div class="acard-title">Массовое продление подписок</div>
@@ -88,6 +94,49 @@ $admin = require_admin();
 </div>
 <script>
 const CSRF = document.querySelector('[name=csrf_token]')?.value ?? '';
+
+// Load pause requests
+fetch('/api/admin/pause-requests.php').then(r => r.json()).then(data => {
+  const el = document.getElementById('pauseList');
+  if (!data.ok || !data.requests.length) {
+    el.innerHTML = '<p style="font-size:13px;color:var(--muted)">Заявок пока нет</p>';
+    return;
+  }
+  const statusLabel = { pending: '⏳ Ожидает', approved: '✓ Одобрена', rejected: '✗ Отклонена' };
+  const statusColor = { pending: 'var(--warning)', approved: 'var(--success)', rejected: 'var(--danger)' };
+  el.innerHTML = data.requests.map(r => `
+    <div style="padding:14px 0;border-bottom:1px solid var(--cream-deep)">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px">
+        <strong style="font-size:14px">${r.name} ${r.last_name || ''}</strong>
+        <span style="font-size:12px;color:var(--muted)">${r.email}</span>
+        <span style="font-size:12px;color:${statusColor[r.status]}">${statusLabel[r.status]}</span>
+        <span style="font-size:12px;color:var(--muted)">Запрос: ${r.days} дн.</span>
+        ${r.expires_at ? `<span style="font-size:12px;color:var(--muted)">Подписка до: ${r.expires_at}</span>` : ''}
+      </div>
+      ${r.reason ? `<p style="font-size:13px;color:var(--ink-soft);margin-bottom:8px">«${r.reason}»</p>` : ''}
+      ${r.status === 'pending' ? `
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <label style="font-size:12px;color:var(--muted)">Дней:</label>
+          <input type="number" id="days_${r.id}" value="${r.days}" min="1" max="90" style="width:60px;padding:4px 8px;border:1px solid #ccc;border-radius:4px;font-size:13px">
+          <button class="btn btn-primary btn-sm" onclick="reviewPause(${r.id},'approve')">Одобрить</button>
+          <button class="btn btn-ghost btn-sm" onclick="reviewPause(${r.id},'reject')">Отклонить</button>
+        </div>
+      ` : `<p style="font-size:12px;color:var(--muted)">${r.reviewed_at ? 'Рассмотрено: ' + r.reviewed_at : ''}</p>`}
+    </div>
+  `).join('');
+});
+
+async function reviewPause(id, action) {
+  const days = parseInt(document.getElementById('days_' + id)?.value);
+  const res = await fetch('/api/admin/pause-requests.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF },
+    body: JSON.stringify({ id, action, days }),
+  });
+  const data = await res.json();
+  if (data.ok) location.reload();
+  else showAlert('Ошибка: ' + (data.error || 'неизвестная'), 'error');
+}
 
 // Load settings
 fetch('/api/admin/settings.php').then(r => r.json()).then(data => {
