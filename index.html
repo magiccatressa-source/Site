@@ -1174,7 +1174,7 @@ section { padding: 112px 0; }
       </div>
       <div class="club-card">
         <span class="club-card-num">02 · Архив</span>
-        <h3>90+ записей в любое время</h3>
+        <h3><span id="lessonCountBadge">90+</span> записей в любое время</h3>
         <p>Все эфиры доступны в телеграм-канале клуба. Пропустили занятие - запись придёт в тот же день.</p>
       </div>
       <div class="club-card">
@@ -1384,6 +1384,15 @@ section { padding: 112px 0; }
     </div>
   </div>
 </footer>
+
+<script>
+fetch('/api/lesson-count.php').then(r => r.json()).then(d => {
+  if (d && d.ok && d.count > 0) {
+    const el = document.getElementById('lessonCountBadge');
+    if (el) el.textContent = d.count + '+';
+  }
+}).catch(() => {});
+</script>
 
 </body>
 </html>

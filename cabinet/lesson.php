@@ -108,6 +108,14 @@ $isFavorite = (bool)$favQ->fetch();
     ></iframe>
   </div>
 
+  <!-- Done button -->
+  <div style="text-align:center; margin-bottom:32px">
+    <button id="doneBtn" class="btn-done<?= $isCompleted ? ' done' : '' ?>"
+            onclick="toggleDone()">
+      <?= $isCompleted ? '✓ Сделано!' : 'Я позанималась / позанимался!' ?>
+    </button>
+  </div>
+
   <?php if ($lesson['description']): ?>
   <div class="card">
     <p class="card-title">Описание урока</p>
@@ -120,6 +128,9 @@ $isFavorite = (bool)$favQ->fetch();
   <div style="margin-top:32px">
     <a href="/cabinet/" class="btn btn-ghost">← Все уроки</a>
   </div>
+
+  <!-- Confetti canvas -->
+  <canvas id="confettiCanvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999;display:none"></canvas>
 </main>
 
 <script>
@@ -174,6 +185,67 @@ async function sendProgress(watchSeconds, completed) {
       document.title = '✓ ' + document.title;
     }
   } catch {}
+}
+
+// Done button
+let isDone = <?= $isCompleted ? 'true' : 'false' ?>;
+
+async function toggleDone() {
+  isDone = !isDone;
+  const btn = document.getElementById('doneBtn');
+  btn.classList.toggle('done', isDone);
+  btn.textContent = isDone ? '✓ Сделано!' : 'Я позанималась / позанимался!';
+  if (isDone) launchConfetti();
+  try {
+    await fetch('/api/cabinet/progress.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF },
+      body: JSON.stringify({ lesson_id: LESSON_ID, watch_seconds: 0, completed: isDone }),
+    });
+  } catch {}
+}
+
+// Confetti
+function launchConfetti() {
+  const canvas = document.getElementById('confettiCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.display = 'block';
+
+  const colors = ['#8b3a4a','#c4956a','#d4b896','#7aab7a','#e8d5c4','#f0c040'];
+  const pieces = Array.from({length: 120}, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height - canvas.height,
+    r: Math.random() * 6 + 3,
+    d: Math.random() * 120 + 80,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    tilt: Math.random() * 10 - 10,
+    tiltAngle: 0,
+    tiltSpeed: Math.random() * 0.07 + 0.05,
+  }));
+
+  let angle = 0, tick = 0;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    angle += 0.01;
+    tick++;
+    pieces.forEach(p => {
+      p.tiltAngle += p.tiltSpeed;
+      p.y += (Math.cos(angle + p.d) + 2) * 1.8;
+      p.x += Math.sin(angle) * 1.2;
+      p.tilt = Math.sin(p.tiltAngle) * 12;
+      ctx.beginPath();
+      ctx.lineWidth = p.r;
+      ctx.strokeStyle = p.color;
+      ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+      ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+      ctx.stroke();
+    });
+    if (tick < 200) requestAnimationFrame(draw);
+    else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = 'none'; }
+  }
+  draw();
 }
 
 function copyPass() {

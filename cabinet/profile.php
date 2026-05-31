@@ -36,7 +36,19 @@ $subStatus = subscription_display_status($sub);
   </nav>
 </header>
 <main class="lk-main">
-  <h1 style="font-size:28px; margin-bottom:32px">Профиль</h1>
+  <h1 style="font-size:28px; margin-bottom:24px">Профиль</h1>
+
+  <!-- Stats -->
+  <div class="stats-row" id="statsRow" style="display:none">
+    <div class="stat-card">
+      <div class="stat-num" id="statLessons">—</div>
+      <div class="stat-label">уроков пройдено</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="statHours">—</div>
+      <div class="stat-label">часов практики</div>
+    </div>
+  </div>
 
   <div id="alertProfile" class="alert" style="display:none"></div>
 
@@ -144,6 +156,15 @@ $subStatus = subscription_display_status($sub);
 
 <script>
 const CSRF = <?= json_encode(csrf_token()) ?>;
+
+// Load stats
+fetch('/api/cabinet/stats.php').then(r => r.json()).then(data => {
+  if (!data.ok) return;
+  document.getElementById('statLessons').textContent = data.completed_lessons;
+  const h = data.hours, m = data.minutes;
+  document.getElementById('statHours').textContent = h > 0 ? h + (m > 0 ? ',' + Math.round(m/6)*10 : '') : (m + ' мин');
+  document.getElementById('statsRow').style.display = 'flex';
+});
 
 // Save profile
 const profileForm = document.getElementById('profileForm');

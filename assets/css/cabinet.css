@@ -387,6 +387,107 @@ h1, h2, h3, h4 {
   color: var(--muted);
 }
 
+/* ── Done button ─────────────────────────────────────────── */
+.btn-done {
+  display: inline-block;
+  padding: 14px 36px;
+  font-family: 'Instrument Serif', serif;
+  font-size: 18px;
+  border-radius: 50px;
+  border: 2px solid var(--marsala);
+  background: transparent;
+  color: var(--marsala);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 0.01em;
+}
+.btn-done:hover {
+  background: var(--marsala);
+  color: var(--cream);
+  transform: scale(1.03);
+}
+.btn-done.done {
+  background: var(--success);
+  border-color: var(--success);
+  color: #fff;
+  transform: scale(1.05);
+}
+
+/* ── Topic beauty ─────────────────────────────────────────── */
+.topic-item {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.topic-header {
+  background: var(--cream-deep) !important;
+}
+.topic-header:hover {
+  background: #ddd5bc !important;
+}
+.topic-item.open {
+  border-left: 3px solid var(--marsala);
+}
+.topic-item.open .topic-header {
+  background: var(--cream-deep) !important;
+}
+
+/* ── Lesson checkmark ─────────────────────────────────────── */
+.lesson-status-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: bold;
+}
+.lesson-item.completed .lesson-status-icon {
+  background: var(--success-bg);
+  color: var(--success);
+}
+.lesson-item:not(.completed) .lesson-status-icon {
+  display: none;
+}
+.lesson-item {
+  background: var(--white);
+}
+.lesson-item:hover {
+  background: #faf8f3;
+}
+
+/* ── Stats block ──────────────────────────────────────────── */
+.stats-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+.stat-card {
+  flex: 1;
+  min-width: 140px;
+  background: var(--white);
+  border: 1px solid var(--cream-deep);
+  border-radius: 12px;
+  padding: 20px 24px;
+  text-align: center;
+}
+.stat-card .stat-num {
+  font-family: 'Instrument Serif', serif;
+  font-size: 36px;
+  color: var(--marsala);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.stat-card .stat-label {
+  font-size: 13px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
 /* ── Mobile ──────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .lk-main, .lk-main-wide { padding: 24px 16px 60px; }

@@ -32,4 +32,12 @@ db()->prepare(
        watched_at    = NOW()'
 )->execute([$user['id'], $lessonId, $watchSec, $completed ? 1 : 0]);
 
+// Also record every session separately for cumulative stats
+if ($watchSec > 0) {
+    db()->prepare(
+        'INSERT INTO lesson_views (user_id, lesson_id, watch_seconds, viewed_at)
+         VALUES (?, ?, ?, NOW())'
+    )->execute([$user['id'], $lessonId, $watchSec]);
+}
+
 json_ok();
