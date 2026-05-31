@@ -1266,7 +1266,7 @@ section { padding: 112px 0; }
         <div class="price-divider"></div>
         <ul class="price-list">
           <li>2 живых эфира в неделю по часу</li>
-          <li>Доступ к архиву 90+ записей</li>
+          <li>Доступ к архиву <span class="lessonCountBadge">90+</span> записей</li>
           <li>Личная поддержка в Telegram</li>
           <li>Поправки по технике на эфирах</li>
           <li>Бонусные материалы по темам</li>
@@ -1388,8 +1388,9 @@ section { padding: 112px 0; }
 <script>
 fetch('/api/lesson-count.php').then(r => r.json()).then(d => {
   if (d && d.ok && d.count > 0) {
-    const el = document.getElementById('lessonCountBadge');
-    if (el) el.textContent = d.count + '+';
+    document.querySelectorAll('#lessonCountBadge, .lessonCountBadge').forEach(el => {
+      el.textContent = d.count + '+';
+    });
   }
 }).catch(() => {});
 </script>

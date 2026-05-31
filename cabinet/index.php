@@ -55,9 +55,22 @@ $lessonCount = db()->query('SELECT COUNT(*) FROM lessons WHERE is_visible = 1')-
 
 <main class="lk-main">
 
-  <h1 style="font-size:32px; margin-bottom:32px">
+  <h1 style="font-size:32px; margin-bottom:20px">
     Привет, <?= htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8') ?>!
   </h1>
+
+  <?php if ($hasAccess): ?>
+  <div class="stats-row" id="statsRow" style="display:none; margin-bottom:28px">
+    <div class="stat-card">
+      <div class="stat-num" id="statLessons">—</div>
+      <div class="stat-label">уроков пройдено</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="statHours">—</div>
+      <div class="stat-label">часов практики</div>
+    </div>
+  </div>
+  <?php endif; ?>
 
   <!-- Lesson catalog — FIRST -->
   <?php if ($hasAccess): ?>
@@ -167,6 +180,21 @@ $lessonCount = db()->query('SELECT COUNT(*) FROM lessons WHERE is_visible = 1')-
 
 <script>
 const CSRF = <?= json_encode(csrf_token()) ?>;
+
+<?php if ($hasAccess): ?>
+// Load stats
+fetch('/api/cabinet/stats.php').then(r => r.json()).then(data => {
+  if (!data.ok) return;
+  document.getElementById('statLessons').textContent = data.completed_lessons;
+  const h = data.hours, m = data.minutes;
+  document.getElementById('statHours').textContent = h > 0
+    ? h + (m >= 6 ? ',' + Math.round(m/6)*10 : '')
+    : (m > 0 ? m + ' мин' : '0');
+  if (data.completed_lessons > 0 || data.total_seconds > 0) {
+    document.getElementById('statsRow').style.display = 'flex';
+  }
+});
+<?php endif; ?>
 
 // Welcome video: show only on first visit
 <?php if ($welcomeId): ?>
