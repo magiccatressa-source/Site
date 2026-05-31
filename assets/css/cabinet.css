@@ -438,7 +438,7 @@ h1, h2, h3, h4 {
   color: var(--success);
 }
 .lesson-item:not(.completed) .lesson-status-icon {
-  display: none;
+  visibility: hidden;
 }
 .lesson-item {
   background: var(--white);
