@@ -256,7 +256,7 @@ h1, h2, h3, h4 {
   font-size: 11px;
   font-family: 'Spectral', serif;
   background: var(--marsala);
-  color: var(--cream);
+  color: var(--cream) !important;
   padding: 1px 8px;
   border-radius: 4px;
   vertical-align: middle;
