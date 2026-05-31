@@ -820,9 +820,9 @@ section { padding: 112px 0; }
 }
 
 .price-extras {
-  margin-top: 28px;
-  display: flex;
-  flex-direction: column;
+  margin-top: 48px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 }
 
@@ -1328,28 +1328,29 @@ section { padding: 112px 0; }
         <div class="price-quote-block">
           <p>Меньше чашки кофе в день за час практики с живым преподавателем, который вас видит и поправляет</p>
         </div>
-        <div class="price-extras">
-          <div class="price-extra-item">
-            <span class="price-extra-icon">↩</span>
-            <div>
-              <strong>Гарантия возврата</strong>
-              <p>Если после первого занятия поймёте, что не ваше - верну деньги без вопросов</p>
-            </div>
-          </div>
-          <div class="price-extra-item">
-            <span class="price-extra-icon">🤝</span>
-            <div>
-              <strong>Рассрочка или отсрочка</strong>
-              <p>Нужна отсрочка или рассрочка - ноль проблем, просто напишите мне. Доверяю людям и даю отсрочки без всяких банков, под честное слово</p>
-            </div>
-          </div>
-          <div class="price-extra-item">
-            <span class="price-extra-icon">⏸</span>
-            <div>
-              <strong>Заморозка подписки</strong>
-              <p>Уходите в отпуск или заболели - напишите мне, поставим подписку на паузу. Дни не сгорят</p>
-            </div>
-          </div>
+      </div>
+    </div>
+
+    <div class="price-extras">
+      <div class="price-extra-item">
+        <span class="price-extra-icon">↩</span>
+        <div>
+          <strong>Гарантия возврата</strong>
+          <p>Если после первого занятия поймёте, что не ваше - верну деньги без вопросов</p>
+        </div>
+      </div>
+      <div class="price-extra-item">
+        <span class="price-extra-icon">🤝</span>
+        <div>
+          <strong>Рассрочка или отсрочка</strong>
+          <p>Нужна отсрочка или рассрочка - ноль проблем, просто напишите мне. Доверяю людям и даю отсрочки без всяких банков, под честное слово</p>
+        </div>
+      </div>
+      <div class="price-extra-item">
+        <span class="price-extra-icon">⏸</span>
+        <div>
+          <strong>Заморозка подписки</strong>
+          <p>Уходите в отпуск или заболели - дни подписки не сгорят, просто в личном кабинете поставьте на паузу, или напишите мне. Я хочу чтобы вы занимались, а не платили деньги просто так</p>
         </div>
       </div>
     </div>
@@ -1357,17 +1358,17 @@ section { padding: 112px 0; }
 </section>
 
 <!-- ── TRIAL CTA ── -->
-<section class="trial-cta" id="trial" aria-label="Бесплатные зарядки">
+<section class="trial-cta" id="trial" aria-label="Пробный доступ">
   <div class="trial-inner">
     <span class="eyebrow eyebrow-light" style="justify-content:center;">Прежде чем что-то решать</span>
     <h2>Попробуйте <em>бесплатно</em></h2>
-    <p>Я записала серию коротких зарядок по 10–30 минут. Никаких сложных асан - просто бережное движение, чтобы вы почувствовали мой подход. Доступ в Telegram-боте сразу после регистрации.</p>
+    <p>Зарегистрируйтесь в личном кабинете и нажмите кнопку «Пробный доступ» - там вы увидите как всё выглядит изнутри и сможете попробовать несколько уроков разной длительности.</p>
     <div class="trial-tags">
-      <span>3 зарядки разной длины</span>
-      <span>Без оплаты карты</span>
-      <span>Доступ в один клик</span>
+      <span>Попробовать - просто</span>
+      <span>Без оплаты</span>
+      <span>Доступ в пару кликов</span>
     </div>
-    <a href="https://t.me/lubov_yoga_bot?start=site" class="btn-light">Получить зарядки в Telegram</a>
+    <a href="/auth/register.php" class="btn-light">Попробовать бесплатно</a>
   </div>
 </section>
 

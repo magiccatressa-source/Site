@@ -13,7 +13,7 @@ if ($method === 'GET') {
     $topicId = (int)($_GET['topic_id'] ?? 0);
     if ($topicId) {
         $rows = db()->prepare(
-            'SELECT id, topic_id, title, kinescope_id, description, duration_min, sort_order, is_visible
+            'SELECT id, topic_id, title, kinescope_id, description, duration_min, sort_order, is_visible, is_trial
              FROM lessons WHERE topic_id = ? ORDER BY sort_order, id'
         );
         $rows->execute([$topicId]);
@@ -68,7 +68,7 @@ if ($method === 'PUT') {
     foreach (['topic_id','title','kinescope_id','description'] as $f) {
         if (array_key_exists($f, $data)) { $fields[] = "$f = ?"; $params[] = $data[$f]; }
     }
-    foreach (['duration_min','sort_order','is_visible'] as $f) {
+    foreach (['duration_min','sort_order','is_visible','is_trial'] as $f) {
         if (array_key_exists($f, $data)) {
             $fields[] = "$f = ?";
             $params[] = ($data[$f] !== null && $data[$f] !== '') ? (int)$data[$f] : null;

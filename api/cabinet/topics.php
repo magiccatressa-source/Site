@@ -35,7 +35,7 @@ foreach ($s->fetchAll() as $f) {
 
 // Get lessons per topic
 $lessonsStmt = db()->prepare(
-    'SELECT id, topic_id, title, duration_min FROM lessons
+    'SELECT id, topic_id, title, duration_min, is_trial FROM lessons
      WHERE is_visible = 1 ORDER BY topic_id, sort_order, id'
 );
 $lessonsStmt->execute();
@@ -48,6 +48,7 @@ foreach ($lessonsStmt->fetchAll() as $l) {
         'duration_min'=> $l['duration_min'],
         'completed'   => $progress[$l['id']] ?? false,
         'is_favorite' => $favorites[$l['id']] ?? false,
+        'is_trial'    => (bool)$l['is_trial'],
     ];
 }
 

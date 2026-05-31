@@ -25,5 +25,15 @@ db()->prepare(
     'UPDATE users SET email_verified = 1, email_verify_token = NULL, email_verify_expires = NULL WHERE id = ?'
 )->execute([$user['id']]);
 
+// Create trial subscription (5 days) if none exists
+$hasSub = db()->prepare('SELECT id FROM subscriptions WHERE user_id = ?');
+$hasSub->execute([$user['id']]);
+if (!$hasSub->fetch()) {
+    db()->prepare(
+        'INSERT INTO subscriptions (user_id, status, started_at, expires_at)
+         VALUES (?, "trial", CURDATE(), DATE_ADD(CURDATE(), INTERVAL 5 DAY))'
+    )->execute([$user['id']]);
+}
+
 header('Location: /auth/login.php?verified=1');
 exit;

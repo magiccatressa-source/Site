@@ -28,7 +28,12 @@ $schedule   = setting('schedule_text');
 $welcomeId  = setting('welcome_kinescope_id');
 $welcomeTxt = setting('welcome_text');
 $hasAccess   = has_active_access($sub);
+$isTrial     = $statusKey === 'trial';
 $lessonCount = db()->query('SELECT COUNT(*) FROM lessons WHERE is_visible = 1')->fetchColumn();
+$trialDaysLeft = 0;
+if ($isTrial && $sub && $sub['expires_at']) {
+    $trialDaysLeft = max(0, (int)ceil((strtotime($sub['expires_at']) - time()) / 86400));
+}
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -68,6 +73,25 @@ $lessonCount = db()->query('SELECT COUNT(*) FROM lessons WHERE is_visible = 1')-
     <div class="stat-card">
       <div class="stat-num" id="statHours">—</div>
       <div class="stat-label">часов практики</div>
+    </div>
+  </div>
+  <?php endif; ?>
+
+  <!-- Trial access block -->
+  <?php if ($isTrial): ?>
+  <div class="card" style="margin-bottom:24px;border-color:var(--marsala)">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+      <p class="card-title" style="margin:0">Ваш пробный доступ</p>
+      <span style="font-size:13px;color:<?= $trialDaysLeft <= 1 ? 'var(--danger)' : 'var(--muted)' ?>">
+        <?= $trialDaysLeft > 0 ? "Осталось {$trialDaysLeft} " . (($trialDaysLeft === 1) ? 'день' : ($trialDaysLeft < 5 ? 'дня' : 'дней')) : 'Последний день' ?>
+      </span>
+    </div>
+    <div id="trialLessonsBlock">
+      <p style="font-size:13px;color:var(--muted)">Загрузка...</p>
+    </div>
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--cream-deep)">
+      <p style="font-size:14px;color:var(--ink-soft);margin-bottom:12px">Понравилось? Оформите подписку и получите доступ ко всему архиву</p>
+      <a href="https://t.me/indicatrisa" target="_blank" class="btn btn-primary btn-sm">Оформить подписку ↗</a>
     </div>
   </div>
   <?php endif; ?>
@@ -259,16 +283,38 @@ document.getElementById('logoutBtn').addEventListener('click', (e) => {
 });
 
 <?php if ($hasAccess): ?>
+const IS_TRIAL = <?= $isTrial ? 'true' : 'false' ?>;
+
 async function loadTopics() {
   try {
     const res = await fetch('/api/cabinet/topics.php');
     const data = await res.json();
     if (!data.ok) return;
+    if (IS_TRIAL) renderTrialLessons(data.topics);
     renderTopics(data.topics);
   } catch {
     document.getElementById('topicsContainer').innerHTML =
       '<p style="color:var(--danger)">Ошибка загрузки уроков. Обновите страницу.</p>';
   }
+}
+
+function renderTrialLessons(topics) {
+  const block = document.getElementById('trialLessonsBlock');
+  if (!block) return;
+  const trialLessons = [];
+  topics.forEach(t => t.lessons.forEach(l => { if (l.is_trial) trialLessons.push(l); }));
+  if (!trialLessons.length) {
+    block.innerHTML = '<p style="font-size:13px;color:var(--muted)">Пробные уроки скоро появятся</p>';
+    return;
+  }
+  block.innerHTML = trialLessons.map(l => `
+    <a class="lesson-item${l.completed ? ' completed' : ''}" href="/cabinet/lesson.php?id=${l.id}"
+       style="border:1px solid var(--cream-deep);border-radius:6px;margin-bottom:6px">
+      <span class="lesson-status-icon">${l.completed ? '✓' : ''}</span>
+      <span class="lesson-title">${escHtml(l.title)}</span>
+      ${l.duration_min ? `<span class="lesson-duration">${l.duration_min} мин</span>` : ''}
+    </a>
+  `).join('');
 }
 
 function renderTopics(topics) {
@@ -288,7 +334,16 @@ function renderTopics(topics) {
       </div>
       <div class="topic-lessons">
         ${topic.lessons.length
-          ? topic.lessons.map(lesson => `
+          ? topic.lessons.map(lesson => {
+            const locked = IS_TRIAL && !lesson.is_trial;
+            if (locked) return `
+              <div class="lesson-item lesson-locked">
+                <span class="lesson-status-icon" style="visibility:hidden"></span>
+                <span class="lesson-title" style="color:var(--muted)">${escHtml(lesson.title)}</span>
+                ${lesson.duration_min ? `<span class="lesson-duration">${lesson.duration_min} мин</span>` : ''}
+                <span style="font-size:14px;color:var(--muted)">🔒</span>
+              </div>`;
+            return `
             <a class="lesson-item${lesson.completed ? ' completed' : ''}"
                href="/cabinet/lesson.php?id=${lesson.id}">
               <span class="lesson-status-icon">${lesson.completed ? '✓' : ''}</span>
@@ -297,7 +352,8 @@ function renderTopics(topics) {
               <button class="lesson-fav${lesson.is_favorite ? ' active' : ''}"
                       onclick="toggleFav(event, ${lesson.id}, this)"
                       title="${lesson.is_favorite ? 'Убрать из избранного' : 'В избранное'}">♥</button>
-            </a>`).join('')
+            </a>`;
+          }).join('')
           : '<p style="padding:16px 20px;font-size:14px;color:var(--muted)">Уроков пока нет</p>'
         }
       </div>

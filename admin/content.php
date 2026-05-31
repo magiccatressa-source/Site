@@ -111,6 +111,10 @@ $topics = db()->query(
       <label>Описание урока</label>
       <textarea id="lessonDescription" class="form-control" rows="5" placeholder="Текстовое описание урока, которое появится под видео…"></textarea>
     </div>
+    <div class="form-group" style="display:flex;align-items:center;gap:8px">
+      <input type="checkbox" id="lessonIsTrial" style="width:16px;height:16px;cursor:pointer">
+      <label for="lessonIsTrial" style="margin:0;cursor:pointer;font-size:14px">Пробный урок (виден при пробном доступе)</label>
+    </div>
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">
       <button class="btn btn-ghost" onclick="closeLessonModal()">Отмена</button>
       <button class="btn btn-primary" id="saveLessonBtn" onclick="saveLesson()">Сохранить</button>
@@ -185,6 +189,7 @@ function openNewLesson(topicId) {
   document.getElementById('lessonKinescopeId').value = '';
   document.getElementById('lessonDuration').value = '';
   document.getElementById('lessonDescription').value = '';
+  document.getElementById('lessonIsTrial').checked = false;
   document.getElementById('lessonModal').style.display = 'flex';
 }
 
@@ -200,6 +205,7 @@ async function openEditLesson(lessonId, topicId) {
   document.getElementById('lessonKinescopeId').value = lesson.kinescope_id;
   document.getElementById('lessonDuration').value = lesson.duration_min || '';
   document.getElementById('lessonDescription').value = lesson.description || '';
+  document.getElementById('lessonIsTrial').checked = !!lesson.is_trial;
   document.getElementById('lessonModal').style.display = 'flex';
 }
 
@@ -217,6 +223,7 @@ async function saveLesson() {
     kinescope_id: document.getElementById('lessonKinescopeId').value.trim(),
     duration_min: document.getElementById('lessonDuration').value || null,
     description:  document.getElementById('lessonDescription').value,
+    is_trial:     document.getElementById('lessonIsTrial').checked ? 1 : 0,
   };
   if (id) payload.id = id;
 
