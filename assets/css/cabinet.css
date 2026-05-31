@@ -253,16 +253,14 @@ h1, h2, h3, h4 {
 
 .topic-current-badge {
   display: inline-block;
-  font-size: 10px;
+  font-size: 11px;
   font-family: 'Spectral', serif;
-  background: transparent;
-  color: var(--success);
-  border: 1px solid var(--success);
-  padding: 1px 7px;
-  border-radius: 10px;
+  background: var(--marsala);
+  color: var(--cream);
+  padding: 1px 8px;
+  border-radius: 4px;
   vertical-align: middle;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .topic-toggle {
