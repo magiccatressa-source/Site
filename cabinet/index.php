@@ -90,7 +90,7 @@ if ($isTrial && $sub && $sub['expires_at']) {
       <p style="font-size:13px;color:var(--muted)">Загрузка...</p>
     </div>
     <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--cream-deep)">
-      <p style="font-size:14px;color:var(--ink-soft);margin-bottom:12px">Понравилось? Оформите подписку и получите доступ ко всему архиву</p>
+      <p style="font-size:14px;color:var(--ink-soft);margin-bottom:12px">Понравилось? Оформите подписку и получите полный доступ - живые эфиры 2 раза в неделю, все записи уроков и ответы на вопросы.</p>
       <a href="https://t.me/indicatrisa" target="_blank" class="btn btn-primary btn-sm">Оформить подписку ↗</a>
     </div>
   </div>
