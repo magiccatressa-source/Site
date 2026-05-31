@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Дашборд — Администратор</title>
+<style>
+:root {
+  --marsala:      #9B3A4A;
+  --marsala-dark: #7d2e3c;
+  --moss:         #2E3B2A;
+  --cream:        #F2EAD8;
+  --cream-deep:   #e6dcc6;
+  --ink:          #1B1612;
+  --ink-soft:     #3d3028;
+  --muted:        #7a6a60;
+  --white:        #fff;
+  --success:      #2d6a4f;
+  --success-bg:   #d8f3dc;
+  --warning:      #7d6000;
+  --warning-bg:   #fff3cd;
+  --danger:       #9B3A4A;
+  --danger-bg:    #f8d7da;
+  --admin-sidebar-w: 220px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f5f5f0;
+  color: var(--ink);
+  font-size: 14px;
+  min-height: 100vh;
+}
+a { color: var(--marsala); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Layout */
+.admin-wrap { display: flex; min-height: 100vh; }
+
+.admin-sidebar {
+  width: var(--admin-sidebar-w);
+  background: var(--moss);
+  color: #d4e0c8;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 50;
+}
+.sidebar-logo {
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  font-family: Georgia, serif;
+  font-style: italic;
+  font-size: 16px;
+  color: #fff;
+  text-decoration: none;
+  display: block;
+}
+.sidebar-nav { flex: 1; padding: 16px 0; overflow-y: auto; }
+.sidebar-nav a {
+  display: block;
+  padding: 10px 24px;
+  font-size: 14px;
+  color: #c5d9b8;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+.sidebar-nav a:hover,
+.sidebar-nav a.active {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  text-decoration: none;
+}
+.sidebar-nav .nav-section {
+  padding: 16px 24px 6px;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+}
+.sidebar-bottom {
+  padding: 16px 24px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-content {
+  margin-left: var(--admin-sidebar-w);
+  flex: 1;
+}
+.admin-topbar {
+  background: var(--white);
+  border-bottom: 1px solid var(--cream-deep);
+  padding: 14px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+.admin-topbar h1 { font-size: 20px; font-weight: 600; }
+.admin-main { padding: 28px 32px 60px; }
+
+/* Stats */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--white);
+  border: 1px solid var(--cream-deep);
+  padding: 20px 24px;
+}
+.stat-num { font-size: 32px; font-weight: 700; color: var(--marsala); line-height: 1; }
+.stat-lbl { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+/* Cards */
+.acard {
+  background: var(--white);
+  border: 1px solid var(--cream-deep);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.acard-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: var(--ink); }
+
+/* Table */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 2px solid var(--cream-deep);
+  background: #faf9f5;
+  white-space: nowrap;
+}
+.data-table td {
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--cream-deep);
+  vertical-align: middle;
+  font-size: 14px;
+}
+.data-table tr:hover td { background: #faf9f5; }
+
+/* Badges */
+.badge { display: inline-block; padding: 3px 8px; font-size: 11px; font-weight: 500; border-radius: 2px; }
+.badge-active   { background: var(--success-bg); color: var(--success); }
+.badge-trial    { background: #dbeafe; color: #1e40af; }
+.badge-paused   { background: var(--warning-bg); color: var(--warning); }
+.badge-pending  { background: #fef3c7; color: #92400e; }
+.badge-inactive { background: var(--cream-deep); color: var(--muted); }
+
+/* Buttons */
+.btn {
+  display: inline-block;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+  text-decoration: none;
+  font-family: inherit;
+}
+.btn-primary  { background: var(--marsala); color: var(--white); }
+.btn-success  { background: var(--success); color: var(--white); }
+.btn-ghost    { background: transparent; color: var(--muted); border: 1px solid var(--cream-deep); }
+.btn-sm       { padding: 5px 10px; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="admin-wrap">
+
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <a href="/admin/" class="sidebar-logo">Йога с Любовью</a>
+    <nav class="sidebar-nav">
+      <span class="nav-section">Обзор</span>
+      <a href="/admin/" class="active">Дашборд</a>
+      <span class="nav-section">Пользователи</span>
+      <a href="/admin/users.php">Все пользователи</a>
+      <span class="nav-section">Контент</span>
+      <a href="/admin/content.php">Уроки и темы</a>
+      <span class="nav-section">Настройки</span>
+      <a href="/admin/settings.php">Настройки сайта</a>
+      <a href="/admin/audit-log.php">Журнал действий</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <a href="/cabinet/" style="color:rgba(255,255,255,.4); font-size:12px">← На сайт</a>
+      <a href="#" style="color:rgba(255,255,255,.4); font-size:12px">Выйти</a>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <div class="admin-content">
+    <div class="admin-topbar">
+      <h1>Дашборд</h1>
+      <span style="font-size:13px; color:var(--muted)">Любовь (admin)</span>
+    </div>
+
+    <div class="admin-main">
+
+      <!-- Stats -->
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-num">47</div>
+          <div class="stat-lbl">Всего пользователей</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">31</div>
+          <div class="stat-lbl">Активных подписок</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">3</div>
+          <div class="stat-lbl">Ожидают оплаты</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">+5</div>
+          <div class="stat-lbl">Новых за 7 дней</div>
+        </div>
+      </div>
+
+      <!-- Recent audit log -->
+      <div class="acard">
+        <div class="acard-title">Последние действия</div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Действие</th>
+              <th>Пользователь</th>
+              <th>Кто</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="white-space:nowrap; color:var(--muted)">21.05 14:32</td>
+              <td>Подписка активирована</td>
+              <td><a href="#">Мария Иванова</a></td>
+              <td>Любовь</td>
+            </tr>
+            <tr>
+              <td style="white-space:nowrap; color:var(--muted)">21.05 13:10</td>
+              <td>Пробный доступ выдан</td>
+              <td><a href="#">Ольга Смирнова</a></td>
+              <td>Любовь</td>
+            </tr>
+            <tr>
+              <td style="white-space:nowrap; color:var(--muted)">21.05 11:48</td>
+              <td>Урок добавлен</td>
+              <td>—</td>
+              <td>Любовь</td>
+            </tr>
+            <tr>
+              <td style="white-space:nowrap; color:var(--muted)">20.05 20:15</td>
+              <td>Оплата подтверждена</td>
+              <td><a href="#">Наталья Петрова</a></td>
+              <td>Любовь</td>
+            </tr>
+            <tr>
+              <td style="white-space:nowrap; color:var(--muted)">20.05 18:05</td>
+              <td>Подписка поставлена на паузу</td>
+              <td><a href="#">Екатерина Фёдорова</a></td>
+              <td>Любовь</td>
+            </tr>
+            <tr>
+              <td style="white-space:nowrap; color:var(--muted)">20.05 09:30</td>
+              <td>Рассрочка выставлена</td>
+              <td><a href="#">Анна Кузнецова</a></td>
+              <td>Любовь</td>
+            </tr>
+            <tr>
+              <td style="white-space:nowrap; color:var(--muted)">19.05 17:00</td>
+              <td>Настройки обновлены</td>
+              <td>—</td>
+              <td>Любовь</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="margin-top:12px"><a href="/admin/audit-log.php">Весь журнал →</a></p>
+      </div>
+
+      <!-- Users quick look -->
+      <div class="acard">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px">
+          <div class="acard-title" style="margin-bottom:0">Последние участницы</div>
+          <a href="/admin/users.php" class="btn btn-ghost btn-sm">Все пользователи →</a>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Имя</th>
+              <th>Email</th>
+              <th>Подписка</th>
+              <th>Истекает</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Ольга Смирнова</td>
+              <td style="color:var(--muted)">olga@example.com</td>
+              <td><span class="badge badge-trial">Пробный</span></td>
+              <td style="color:var(--muted)">28.05.2026</td>
+              <td><a href="#" class="btn btn-ghost btn-sm">Изменить</a></td>
+            </tr>
+            <tr>
+              <td>Мария Иванова</td>
+              <td style="color:var(--muted)">maria@example.com</td>
+              <td><span class="badge badge-active">Активна</span></td>
+              <td style="color:var(--muted)">30.06.2026</td>
+              <td><a href="#" class="btn btn-ghost btn-sm">Изменить</a></td>
+            </tr>
+            <tr>
+              <td>Анна Кузнецова</td>
+              <td style="color:var(--muted)">anna@example.com</td>
+              <td><span class="badge badge-pending">Рассрочка</span></td>
+              <td style="color:var(--muted)">30.06.2026</td>
+              <td><a href="#" class="btn btn-ghost btn-sm">Изменить</a></td>
+            </tr>
+            <tr>
+              <td>Екатерина Фёдорова</td>
+              <td style="color:var(--muted)">kate@example.com</td>
+              <td><span class="badge badge-paused">На паузе</span></td>
+              <td style="color:var(--muted)">31.07.2026</td>
+              <td><a href="#" class="btn btn-ghost btn-sm">Изменить</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

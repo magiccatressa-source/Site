@@ -11,7 +11,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'GET') {
     $rows = db()->query(
-        'SELECT id, title, description, sort_order, is_visible FROM topics ORDER BY sort_order, id'
+        'SELECT id, title, description, sort_order, is_visible, is_current FROM topics ORDER BY sort_order, id'
     )->fetchAll();
     json_ok(['topics' => $rows]);
 }
@@ -38,8 +38,12 @@ if ($method === 'PUT') {
     foreach (['title','description'] as $f) {
         if (array_key_exists($f, $data)) { $fields[] = "$f = ?"; $params[] = $data[$f]; }
     }
-    foreach (['sort_order','is_visible'] as $f) {
+    foreach (['sort_order','is_visible','is_current'] as $f) {
         if (array_key_exists($f, $data)) { $fields[] = "$f = ?"; $params[] = (int)$data[$f]; }
+    }
+    // Only one topic can be current at a time
+    if (array_key_exists('is_current', $data) && (int)$data['is_current'] === 1) {
+        db()->prepare('UPDATE topics SET is_current = 0 WHERE id != ?')->execute([$id]);
     }
     if ($fields) {
         $params[] = $id;

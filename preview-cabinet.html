@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Личный кабинет — Клуб йоги Любовь Лучистая</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --marsala:      #9B3A4A;
+  --marsala-dark: #7d2e3c;
+  --moss:         #2E3B2A;
+  --moss-mid:     #3d5038;
+  --cream:        #F2EAD8;
+  --cream-deep:   #e6dcc6;
+  --rose:         #E4B9A6;
+  --ink:          #1B1612;
+  --ink-soft:     #3d3028;
+  --muted:        #7a6a60;
+  --white:        #fff;
+  --success:      #2d6a4f;
+  --success-bg:   #d8f3dc;
+  --warning:      #7d6000;
+  --warning-bg:   #fff3cd;
+  --danger:       #9B3A4A;
+  --danger-bg:    #f8d7da;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Spectral', serif;
+  background: var(--cream);
+  color: var(--ink);
+  line-height: 1.65;
+  font-size: 16px;
+  min-height: 100vh;
+}
+img { max-width: 100%; display: block; }
+a { color: var(--marsala); text-decoration: none; }
+a:hover { text-decoration: underline; }
+h1, h2, h3, h4 {
+  font-family: 'Instrument Serif', serif;
+  font-weight: 400;
+  line-height: 1.15;
+}
+.lk-header {
+  background: var(--cream);
+  border-bottom: 1px solid var(--cream-deep);
+  padding: 0 24px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.lk-header .logo {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 20px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.lk-header nav { display: flex; align-items: center; gap: 24px; }
+.lk-header nav a {
+  font-size: 14px;
+  color: var(--ink-soft);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.lk-header nav a:hover { color: var(--marsala); }
+.lk-header nav a.active { color: var(--marsala); border-bottom: 2px solid var(--marsala); padding-bottom: 2px; }
+.lk-main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+.card {
+  background: var(--white);
+  border: 1px solid var(--cream-deep);
+  padding: 28px 32px;
+  margin-bottom: 24px;
+}
+.card-title {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-family: 'Spectral', serif;
+  letter-spacing: 0.02em;
+}
+.badge-active     { background: var(--success-bg); color: var(--success); }
+.badge-trial      { background: #dbeafe; color: #1e40af; }
+.badge-paused     { background: var(--warning-bg); color: var(--warning); }
+.badge-pending    { background: #fef3c7; color: #92400e; }
+.badge-inactive   { background: var(--cream-deep); color: var(--muted); }
+.btn {
+  display: inline-block;
+  padding: 12px 24px;
+  font-family: 'Spectral', serif;
+  font-size: 15px;
+  font-weight: 400;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s, color 0.2s;
+  letter-spacing: 0.01em;
+}
+.btn-primary  { background: var(--marsala); color: var(--cream); }
+.btn-primary:hover { background: var(--marsala-dark); color: var(--cream); text-decoration: none; }
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--marsala);
+  color: var(--marsala);
+}
+.btn-outline:hover { background: var(--marsala); color: var(--cream); text-decoration: none; }
+.btn-sm { padding: 8px 16px; font-size: 14px; }
+.info-row { display: flex; gap: 16px; flex-wrap: wrap; }
+.info-card {
+  flex: 1;
+  min-width: 200px;
+  background: var(--white);
+  border: 1px solid var(--cream-deep);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.info-card .info-label {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.player-wrap {
+  position: relative;
+  padding-top: 56.25%;
+  background: var(--ink);
+  margin-bottom: 8px;
+}
+.player-placeholder {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  color: rgba(255,255,255,0.5);
+  font-size: 14px;
+}
+.player-placeholder .play-icon {
+  width: 60px; height: 60px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+.topic-item {
+  border: 1px solid var(--cream-deep);
+  margin-bottom: 8px;
+}
+.topic-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  cursor: pointer;
+  background: var(--white);
+  user-select: none;
+}
+.topic-header:hover { background: var(--cream); }
+.topic-header h3 {
+  font-size: 17px;
+  font-family: 'Instrument Serif', serif;
+  font-weight: 400;
+}
+.topic-toggle { font-size: 20px; color: var(--muted); line-height: 1; }
+.topic-lessons { border-top: 1px solid var(--cream-deep); }
+.topic-item.open .topic-toggle { transform: rotate(45deg); display: inline-block; }
+.lesson-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--cream-deep);
+  gap: 12px;
+  text-decoration: none;
+  color: var(--ink);
+}
+.lesson-item:last-child { border-bottom: none; }
+.lesson-item:hover { background: var(--cream); }
+.lesson-status-icon {
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid var(--cream-deep);
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+.lesson-item.completed .lesson-status-icon {
+  background: var(--success);
+  border-color: var(--success);
+  color: #fff;
+}
+.lesson-title { flex: 1; font-size: 15px; }
+.lesson-duration { font-size: 13px; color: var(--muted); }
+.lesson-fav {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0 4px;
+  line-height: 1;
+  color: var(--cream-deep);
+}
+.lesson-fav.active { color: var(--marsala); }
+</style>
+</head>
+<body>
+
+<header class="lk-header">
+  <a href="/" class="logo">Йога с Любовью</a>
+  <nav>
+    <a href="/cabinet/" class="active">Кабинет</a>
+    <a href="/cabinet/favorites.php">Избранное</a>
+    <a href="/cabinet/profile.php">Профиль</a>
+    <a href="#" style="color:var(--muted)">Выйти</a>
+  </nav>
+</header>
+
+<main class="lk-main">
+
+  <h1 style="font-size:32px; margin-bottom:32px">Привет, Анна!</h1>
+
+  <!-- Welcome video -->
+  <div class="card" style="margin-bottom:32px">
+    <p class="card-title">Вводное видео</p>
+    <div class="player-wrap">
+      <div class="player-placeholder">
+        <div class="play-icon">▶</div>
+        <span>Приветственное видео от Любови</span>
+      </div>
+    </div>
+    <p style="margin-top:16px; color:var(--ink-soft); font-size:15px; line-height:1.7">
+      Добро пожаловать в клуб! Здесь вы найдёте всё необходимое для практики: расписание Zoom-занятий, архив уроков и чат с другими участниками.
+    </p>
+  </div>
+
+  <!-- Info row: Zoom + TG + Schedule -->
+  <div class="info-row" style="margin-bottom:24px">
+    <div class="info-card">
+      <span class="info-label">Zoom-занятие</span>
+      <a href="#" class="btn btn-primary btn-sm" style="align-self:flex-start">
+        Открыть Zoom ↗
+      </a>
+    </div>
+    <div class="info-card">
+      <span class="info-label">Чат участников</span>
+      <a href="#" class="btn btn-outline btn-sm" style="align-self:flex-start">
+        Telegram-чат ↗
+      </a>
+    </div>
+    <div class="info-card" style="flex:2">
+      <span class="info-label">Расписание занятий</span>
+      <p style="font-size:15px; color:var(--ink-soft); line-height:1.6; margin:0">
+        Вторник 19:00 — Хатха-йога<br>
+        Четверг 19:00 — Восстановительная<br>
+        Суббота 10:00 — Утренняя практика
+      </p>
+    </div>
+  </div>
+
+  <!-- Subscription status -->
+  <div class="card" style="margin-bottom:24px">
+    <p class="card-title">Подписка</p>
+    <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:16px">
+      <span class="badge badge-active">Активна</span>
+      <span style="font-size:13px; color:var(--muted)">до 30.06.2026</span>
+    </div>
+    <a href="#" class="btn btn-primary btn-sm">Продлить подписку ↗</a>
+  </div>
+
+  <!-- Lesson catalog -->
+  <div id="lessonCatalog">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px">
+      <h2 style="font-size:24px">Уроки</h2>
+      <a href="/cabinet/favorites.php" style="font-size:14px; color:var(--muted)">Избранное →</a>
+    </div>
+
+    <!-- Topic 1 — open -->
+    <div class="topic-item open">
+      <div class="topic-header">
+        <h3>Начало практики</h3>
+        <span class="topic-toggle" style="display:inline-block; transform:rotate(45deg)">+</span>
+      </div>
+      <div class="topic-lessons">
+        <a class="lesson-item completed" href="#">
+          <span class="lesson-status-icon">✓</span>
+          <span class="lesson-title">Знакомство с дыханием</span>
+          <span class="lesson-duration">20 мин</span>
+          <button class="lesson-fav active" title="В избранном">♥</button>
+        </a>
+        <a class="lesson-item completed" href="#">
+          <span class="lesson-status-icon">✓</span>
+          <span class="lesson-title">Поза горы и стоячие асаны</span>
+          <span class="lesson-duration">35 мин</span>
+          <button class="lesson-fav" title="В избранное">♥</button>
+        </a>
+        <a class="lesson-item" href="#">
+          <span class="lesson-status-icon"></span>
+          <span class="lesson-title">Приветствие солнцу — базовый уровень</span>
+          <span class="lesson-duration">40 мин</span>
+          <button class="lesson-fav" title="В избранное">♥</button>
+        </a>
+      </div>
+    </div>
+
+    <!-- Topic 2 — closed -->
+    <div class="topic-item">
+      <div class="topic-header">
+        <h3>Гибкость и равновесие</h3>
+        <span class="topic-toggle">+</span>
+      </div>
+      <div class="topic-lessons" style="display:none">
+        <a class="lesson-item" href="#">
+          <span class="lesson-status-icon"></span>
+          <span class="lesson-title">Баланс на одной ноге</span>
+          <span class="lesson-duration">30 мин</span>
+          <button class="lesson-fav" title="В избранное">♥</button>
+        </a>
+      </div>
+    </div>
+
+    <!-- Topic 3 — closed -->
+    <div class="topic-item">
+      <div class="topic-header">
+        <h3>Восстановительная практика</h3>
+        <span class="topic-toggle">+</span>
+      </div>
+      <div class="topic-lessons" style="display:none"></div>
+    </div>
+
+    <!-- Topic 4 — closed -->
+    <div class="topic-item">
+      <div class="topic-header">
+        <h3>Архив занятий 2024</h3>
+        <span class="topic-toggle">+</span>
+      </div>
+      <div class="topic-lessons" style="display:none"></div>
+    </div>
+
+  </div><!-- /lessonCatalog -->
+
+</main>
+
+</body>
+</html>

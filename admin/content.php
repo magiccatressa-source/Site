@@ -59,8 +59,10 @@ $topics = db()->query(
           <strong><?= htmlspecialchars($t['title'], ENT_QUOTES, 'UTF-8') ?></strong>
           <span style="font-size:12px;color:var(--muted)"><?= (int)$t['lesson_count'] ?> уроков</span>
           <?php if (!$t['is_visible']): ?><span class="badge badge-inactive">скрыта</span><?php endif; ?>
+          <?php if ($t['is_current']): ?><span class="badge badge-active" style="font-size:10px">▶ сейчас изучается</span><?php endif; ?>
           <div style="display:flex;gap:6px" onclick="event.stopPropagation()">
             <button class="btn btn-ghost btn-sm" onclick="editTopic(<?= (int)$t['id'] ?>, '<?= htmlspecialchars(addslashes($t['title']), ENT_QUOTES, 'UTF-8') ?>')">Переименовать</button>
+            <button class="btn btn-ghost btn-sm" onclick="toggleTopicCurrent(<?= (int)$t['id'] ?>, <?= $t['is_current'] ? 0 : 1 ?>)"><?= $t['is_current'] ? 'Снять метку' : '▶ Текущая' ?></button>
             <button class="btn btn-ghost btn-sm" onclick="toggleTopicVisible(<?= (int)$t['id'] ?>, <?= $t['is_visible'] ? 0 : 1 ?>)"><?= $t['is_visible'] ? 'Скрыть' : 'Показать' ?></button>
             <button class="btn btn-danger btn-sm" onclick="deleteTopic(<?= (int)$t['id'] ?>)">Удалить</button>
           </div>
@@ -94,12 +96,16 @@ $topics = db()->query(
     </div>
     <div class="form-group">
       <label>Kinescope ID *</label>
-      <input type="text" id="lessonKinescopeId" class="form-control" placeholder="Вставьте UUID видео из Кинескопа">
+      <input type="text" id="lessonKinescopeId" class="form-control" placeholder="Вставьте UUID видео из Кинескопа"
+             onblur="fetchDuration(this.value)">
       <p class="kinescope-hint">Только UUID, например: <code>abc12345-6789-def0</code></p>
     </div>
     <div class="form-group">
       <label>Длительность (минуты)</label>
-      <input type="number" id="lessonDuration" class="form-control" min="1" max="300" placeholder="Например: 45" style="width:120px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <input type="number" id="lessonDuration" class="form-control" min="1" max="300" placeholder="Например: 45" style="width:120px">
+        <span id="durationHint" style="font-size:12px;color:var(--muted);display:none">заполнено автоматически ✓</span>
+      </div>
     </div>
     <div class="form-group">
       <label>Описание урока</label>
@@ -240,6 +246,27 @@ async function editTopic(id, currentTitle) {
   const res = await apiPost('/api/admin/topics.php', 'PUT', { id, title: title.trim() });
   if (res.ok) location.reload();
   else showAlert('Ошибка переименования.', 'error');
+}
+
+async function fetchDuration(videoId) {
+  videoId = videoId.trim();
+  if (!videoId) return;
+  const durField = document.getElementById('lessonDuration');
+  if (durField.value) return; // don't overwrite if already filled
+  try {
+    const res = await fetch('/api/admin/kinescope-meta.php?video_id=' + encodeURIComponent(videoId));
+    const data = await res.json();
+    if (data.ok && data.duration_min) {
+      durField.value = data.duration_min;
+      document.getElementById('durationHint').style.display = 'inline';
+    }
+  } catch {}
+}
+
+async function toggleTopicCurrent(id, isCurrent) {
+  const res = await apiPost('/api/admin/topics.php', 'PUT', { id, is_current: isCurrent });
+  if (res.ok) location.reload();
+  else showAlert('Ошибка.', 'error');
 }
 
 async function toggleTopicVisible(id, visible) {

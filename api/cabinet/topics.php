@@ -13,7 +13,7 @@ if (!has_active_access($sub)) {
 }
 
 $topics = db()->prepare(
-    'SELECT id, title, description FROM topics WHERE is_visible = 1 ORDER BY sort_order, id'
+    'SELECT id, title, description, is_current FROM topics WHERE is_visible = 1 ORDER BY sort_order, id'
 );
 $topics->execute();
 $topicRows = $topics->fetchAll();
@@ -57,6 +57,7 @@ foreach ($topicRows as $t) {
         'id'          => $t['id'],
         'title'       => $t['title'],
         'description' => $t['description'],
+        'is_current'  => (bool)$t['is_current'],
         'lessons'     => $lessonsByTopic[$t['id']] ?? [],
     ];
 }
