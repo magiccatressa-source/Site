@@ -400,7 +400,7 @@ h1, h2, h3, h4 {
   padding: 18px 56px;
   font-family: 'Instrument Serif', serif;
   font-size: 22px;
-  border-radius: 50px;
+  border-radius: 8px;
   border: 2px solid var(--marsala);
   background: transparent;
   color: var(--marsala);
