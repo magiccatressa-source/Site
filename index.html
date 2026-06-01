@@ -1062,13 +1062,13 @@ section { padding: 112px 0; }
   section { padding: 72px 0; }
   .container, .container-narrow { padding: 0 24px; }
   .site-header { padding: 0 24px; }
-  .pains-grid, .club-grid, .testimonials-grid { grid-template-columns: 1fr; }
+  .pains-grid, .club-grid, .testimonials-grid, .price-extras { grid-template-columns: 1fr; }
   .photos-row { grid-template-columns: 1fr 1fr; height: auto; }
   .photos-row .photo-cell { height: 180px; }
   .about-stats { grid-template-columns: 1fr; }
   .about-stat + .about-stat { border-left: none; border-top: 1px solid var(--cream-deep); padding-left: 0; }
   .testimonial-wide { padding: 40px 28px; }
-  .site-nav a:not(.nav-cta) { display: none; }
+  .site-nav a:not(.nav-cta):not(.nav-lk) { display: none; }
   .site-header { padding: 0 24px; column-gap: 12px; }
   .hero h1 { font-size: 40px; }
 }
@@ -1094,7 +1094,7 @@ section { padding: 112px 0; }
     <a href="#club">Практика</a>
     <a href="#about">Обо мне</a>
     <a href="#pricing">Стоимость</a>
-    <a href="/auth/login.php" style="color:var(--ink-soft)">Личный кабинет</a>
+    <a href="/auth/login.php" class="nav-lk" style="color:var(--ink-soft)">Личный кабинет</a>
     <a href="#trial" class="nav-cta">Попробовать</a>
   </nav>
 </header>
