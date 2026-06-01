@@ -120,6 +120,15 @@ h1, h2, h3, h4 {
 
 .nav-cta:hover { background: var(--marsala-dark) !important; }
 
+.nav-lk { display: flex; align-items: center; gap: 6px; }
+.nav-lk-icon { display: none; width: 28px; height: 28px; }
+.nav-lk-icon svg { width: 28px; height: 28px; }
+
+@media (max-width: 768px) {
+  .nav-lk-icon { display: block; }
+  .nav-lk-text { display: none; }
+}
+
 /* ── HERO ── */
 .hero {
   display: grid;
@@ -484,6 +493,17 @@ section { padding: 112px 0; }
   font-family: 'Spectral', serif;
 }
 
+.club-card-icon {
+  display: block;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 16px;
+}
+.club-card-icon svg {
+  width: 44px;
+  height: 44px;
+}
+
 .club-card h3 {
   font-family: 'Instrument Serif', serif;
   font-size: 24px;
@@ -748,8 +768,10 @@ section { padding: 112px 0; }
 }
 
 .price-list li {
-  padding: 12px 0 12px 26px;
-  position: relative;
+  padding: 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-size: 15px;
   color: var(--ink-soft);
   border-bottom: 1px solid var(--cream-deep);
@@ -757,11 +779,14 @@ section { padding: 112px 0; }
   line-height: 1.5;
 }
 
-.price-list li::before {
-  content: '-';
-  position: absolute;
-  left: 0;
-  color: var(--marsala);
+.price-check {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+}
+.price-check svg {
+  width: 24px;
+  height: 24px;
 }
 
 .price-list li:last-child { border: none; }
@@ -836,9 +861,14 @@ section { padding: 112px 0; }
 }
 
 .price-extra-icon {
-  font-size: 20px;
   flex-shrink: 0;
   margin-top: 2px;
+  width: 36px;
+  height: 36px;
+}
+.price-extra-icon svg {
+  width: 36px;
+  height: 36px;
 }
 
 .price-extra-item strong {
@@ -1094,7 +1124,7 @@ section { padding: 112px 0; }
     <a href="#club">Практика</a>
     <a href="#about">Обо мне</a>
     <a href="#pricing">Стоимость</a>
-    <a href="/auth/login.php" class="nav-lk" style="color:var(--ink-soft)">Личный кабинет</a>
+    <a href="/auth/login.php" class="nav-lk" style="color:var(--ink-soft)"><span class="nav-lk-icon"><svg viewBox="0 0 48 48" fill="none" stroke="#8B2E3F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="17"/><circle cx="24" cy="20" r="5.5"/><path d="M14 38 c1.5-6 5.5-9 10-9 c4.5 0 8.5 3 10 9"/></svg></span><span class="nav-lk-text">Личный кабинет</span></a>
     <a href="#trial" class="nav-cta">Попробовать</a>
   </nav>
 </header>
@@ -1203,6 +1233,7 @@ section { padding: 112px 0; }
 
     <div class="club-grid">
       <div class="club-card">
+        <span class="club-card-icon"><svg viewBox="0 0 48 48" fill="none" stroke="#8B2E3F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="11" width="29" height="22" rx="4"/><path d="M35 19 L42 15 V29 L35 25 Z"/><circle cx="14.5" cy="17.5" r="1.2" fill="#8B2E3F" stroke="none"/><path d="M16 27 C18 23 23 23 25 27"/></svg></span>
         <span class="club-card-num">01 · Эфиры</span>
         <h3>Живые занятия дважды в неделю</h3>
         <p>Понедельник и четверг в 19:00 МСК. Около часа на платформе Zoom. Вы стелите коврик, я веду занятие.</p>
@@ -1213,11 +1244,13 @@ section { padding: 112px 0; }
         </div>
       </div>
       <div class="club-card">
+        <span class="club-card-icon"><svg viewBox="0 0 48 48" fill="none" stroke="#8B2E3F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="8" width="26" height="19" rx="4" opacity="0.3"/><rect x="11" y="13" width="26" height="19" rx="4" opacity="0.55"/><rect x="8" y="18" width="26" height="19" rx="4"/><path d="M18 23 L26 27.5 L18 32 Z"/></svg></span>
         <span class="club-card-num">02 · Архив</span>
         <h3><span id="lessonCountBadge">90+</span> записей в любое время</h3>
         <p>Последние записи доступны в личном кабинете сайта - можно отслеживать свой прогресс по занятиям. Более старые записи хранятся в телеграм-канале с удобной навигацией.</p>
       </div>
       <div class="club-card">
+        <span class="club-card-icon"><svg viewBox="0 0 48 48" fill="none" stroke="#8B2E3F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 12 h28 a4 4 0 0 1 4 4 v14 a4 4 0 0 1 -4 4 H20 l-7 6 v-6 h-3 a4 4 0 0 1 -4 -4 V16 a4 4 0 0 1 4 -4 Z"/><path d="M24 28 c-4-3-7-5-7-9 a3.4 3.4 0 0 1 7-1 a3.4 3.4 0 0 1 7 1 c0 4-3 6-7 9 Z"/></svg></span>
         <span class="club-card-num">03 · Поддержка</span>
         <h3>Личная связь в Telegram</h3>
         <p>Можно написать в личку в Telegram или ВКонтакте, или задать вопрос в общем чате. Отвечаю сама - никаких роботов или ассистентов. Маленькая группа, всех знаю, каждый важен.</p>
@@ -1305,11 +1338,11 @@ section { padding: 112px 0; }
         <p class="price-sub">Продление - <strong>3 000 ₽</strong> в месяц</p>
         <div class="price-divider"></div>
         <ul class="price-list">
-          <li>2 живых эфира в неделю по часу</li>
-          <li>Доступ к архиву <span class="lessonCountBadge">90+</span> записей</li>
-          <li>Личная поддержка в Telegram</li>
-          <li>Поправки по технике на эфирах</li>
-          <li>Бонусные материалы по темам</li>
+          <li><span class="price-check"><svg viewBox="0 0 48 48" fill="none" stroke="#8B2E3F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="17" opacity="0.4"/><path d="M16 24.5 c2.5 .3 5 2 6.5 4.5 c2.5-6 6-10 10-13"/></svg></span>2 живых эфира в неделю по часу</li>
+          <li><span class="price-check"><svg viewBox="0 0 48 48" fill="none" stroke="#8B2E3F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="17" opacity="0.4"/><path d="M16 24.5 c2.5 .3 5 2 6.5 4.5 c2.5-6 6-10 10-13"/></svg></span>Доступ к архиву <span class="lessonCountBadge">90+</span> записей</li>
+          <li><span class="price-check"><svg viewBox="0 0 48 48" fill="none" stroke="#8B2E3F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="17" opacity="0.4"/><path d="M16 24.5 c2.5 .3 5 2 6.5 4.5 c2.5-6 6-10 10-13"/></svg></span>Личная поддержка в Telegram</li>
+          <li><span class="price-check"><svg viewBox="0 0 48 48" fill="none" stroke="#8B2E3F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="17" opacity="0.4"/><path d="M16 24.5 c2.5 .3 5 2 6.5 4.5 c2.5-6 6-10 10-13"/></svg></span>Поправки по технике на эфирах</li>
+          <li><span class="price-check"><svg viewBox="0 0 48 48" fill="none" stroke="#8B2E3F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="17" opacity="0.4"/><path d="M16 24.5 c2.5 .3 5 2 6.5 4.5 c2.5-6 6-10 10-13"/></svg></span>Бонусные материалы по темам</li>
         </ul>
         <div class="price-btn">
           <a href="https://t.me/lubov_yoga_bot?start=site" class="btn-primary">Вступить в клуб</a>
@@ -1333,21 +1366,21 @@ section { padding: 112px 0; }
 
     <div class="price-extras">
       <div class="price-extra-item">
-        <span class="price-extra-icon">↩</span>
+        <span class="price-extra-icon"><svg viewBox="0 0 48 48" fill="none" stroke="#8B2E3F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M24 6 L40 12 V24 c0 9-7 15-16 18 C15 39 8 33 8 24 V12 Z"/><path d="M17 23 l5 5 l9-10"/></svg></span>
         <div>
           <strong>Гарантия возврата</strong>
           <p>Если после первого занятия поймёте, что не ваше - верну деньги без вопросов</p>
         </div>
       </div>
       <div class="price-extra-item">
-        <span class="price-extra-icon">🤝</span>
+        <span class="price-extra-icon"><svg viewBox="0 0 48 48" fill="none" stroke="#8B2E3F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M24 13 c1.7-2 4.4-2 6 0 c1.2-1.7 3.6-1.7 5 0 c1.7 1.8 .4 4.2-1.8 6 L24 24 l-9.2-5 c-2.2-1.8-3.5-4.2-1.8-6 c1.4-1.7 3.8-1.7 5 0 c1.6-2 4.3-2 6 0 Z" transform="translate(0 -2)"/><path d="M8 30 c4 7 10 10 16 10 c6 0 12-3 16-10"/><path d="M8 30 l-1.5 3.5 M40 30 l1.5 3.5"/></svg></span>
         <div>
           <strong>Рассрочка или отсрочка</strong>
           <p>Нужна отсрочка или рассрочка - ноль проблем, просто напишите мне. Доверяю людям и даю отсрочки без всяких банков, под честное слово</p>
         </div>
       </div>
       <div class="price-extra-item">
-        <span class="price-extra-icon">⏸</span>
+        <span class="price-extra-icon"><svg viewBox="0 0 48 48" fill="none" stroke="#8B2E3F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M24 7 V41"/><path d="M9.3 15.5 L38.7 32.5"/><path d="M38.7 15.5 L9.3 32.5"/><path d="M24 7 l-3.5 3.5 M24 7 l3.5 3.5 M24 41 l-3.5 -3.5 M24 41 l3.5 -3.5"/><path d="M9.3 15.5 l.4 4.8 M9.3 15.5 l4.8 .4 M38.7 32.5 l-.4 -4.8 M38.7 32.5 l-4.8 -.4"/><path d="M38.7 15.5 l-4.8 .4 M38.7 15.5 l-.4 4.8 M9.3 32.5 l4.8 -.4 M9.3 32.5 l.4 -4.8"/></svg></span>
         <div>
           <strong>Заморозка подписки</strong>
           <p>Уходите в отпуск или заболели - дни подписки не сгорят, просто в личном кабинете поставьте на паузу, или напишите мне. Я хочу чтобы вы занимались, а не платили деньги просто так</p>
