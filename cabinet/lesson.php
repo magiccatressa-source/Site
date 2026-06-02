@@ -151,6 +151,7 @@ favBtn.addEventListener('click', async () => {
 let playerCurrentTime = 0;
 let playStartedAt = null;
 let accumulatedSeconds = 0;
+let lastSentSeconds = 0;
 const LESSON_DURATION_SEC = <?= (int)($lesson['duration_min'] ?? 0) * 60 ?>;
 
 function getWatchedSeconds() {
@@ -172,19 +173,21 @@ window.addEventListener('message', (e) => {
     accumulatedSeconds += Math.round((Date.now() - playStartedAt) / 1000);
     playStartedAt = null;
   }
-  if (d.includes('KINESCOPE_PLAYER_ENDED_EVENT')) {
-    playerCurrentTime = getWatchedSeconds();
-    if (!progressSent) {
-      progressSent = true;
-      sendProgress(playerCurrentTime, true);
-    }
+  if (d.includes('KINESCOPE_PLAYER_ENDED_EVENT') && !progressSent) {
+    progressSent = true;
+    const delta = getWatchedSeconds() - lastSentSeconds;
+    if (delta > 0) sendProgress(delta, true);
   }
 });
 
-// Send accumulated time every 60 seconds while playing
+// Send only new seconds every 60 seconds
 setInterval(() => {
-  playerCurrentTime = getWatchedSeconds();
-  if (playerCurrentTime > 0) sendProgress(playerCurrentTime, false);
+  const total = getWatchedSeconds();
+  const delta = total - lastSentSeconds;
+  if (delta > 0) {
+    lastSentSeconds = total;
+    sendProgress(delta, false);
+  }
 }, 60000);
 
 // Auto-complete after 80% of lesson duration
@@ -192,18 +195,19 @@ if (LESSON_DURATION_SEC > 0) {
   setTimeout(() => {
     if (!progressSent && getWatchedSeconds() > 0) {
       progressSent = true;
-      playerCurrentTime = getWatchedSeconds();
-      sendProgress(playerCurrentTime, true);
+      const delta = getWatchedSeconds() - lastSentSeconds;
+      if (delta > 0) sendProgress(delta, true);
     }
   }, LESSON_DURATION_SEC * 0.8 * 1000);
 }
 
-// Send on page leave
+// Send remaining seconds on page leave
 window.addEventListener('beforeunload', () => {
-  playerCurrentTime = getWatchedSeconds();
-  if (playerCurrentTime > 0) {
+  const total = getWatchedSeconds();
+  const delta = total - lastSentSeconds;
+  if (delta > 0) {
     navigator.sendBeacon('/api/cabinet/progress.php',
-      JSON.stringify({ lesson_id: LESSON_ID, watch_seconds: playerCurrentTime, completed: false, _csrf: CSRF })
+      JSON.stringify({ lesson_id: LESSON_ID, watch_seconds: delta, completed: false, _csrf: CSRF })
     );
   }
 });
