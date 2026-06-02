@@ -53,6 +53,7 @@ $isFavorite = (bool)$favQ->fetch();
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/cabinet.css">
+<script src="https://player.kinescope.io/latest/iframe.player.js"></script>
 </head>
 <body>
 
@@ -90,22 +91,9 @@ $isFavorite = (bool)$favQ->fetch();
     </div>
   </div>
 
-  <?php if ($kinescopePassword): ?>
-  <div style="display:inline-flex;align-items:center;gap:10px;background:var(--cream-deep);border-radius:8px;padding:10px 16px;margin-bottom:20px;font-size:14px">
-    <span style="color:var(--muted)">Пароль для видео:</span>
-    <span id="kinescopePass" style="font-weight:500;letter-spacing:0.03em"><?= htmlspecialchars($kinescopePassword, ENT_QUOTES, 'UTF-8') ?></span>
-    <button onclick="copyPass()" id="copyPassBtn" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--marsala);padding:0;font-family:inherit">Скопировать</button>
-  </div>
-  <?php endif; ?>
-
   <!-- Kinescope Player -->
   <div class="player-wrap" style="margin-bottom:32px">
-    <iframe
-      id="kinescopePlayer"
-      src="https://kinescope.io/embed/<?= htmlspecialchars($lesson['kinescope_id'], ENT_QUOTES, 'UTF-8') ?>"
-      allow="autoplay; fullscreen; picture-in-picture"
-      allowfullscreen
-    ></iframe>
+    <div id="kinescopePlayer"></div>
   </div>
 
   <!-- Done button -->
@@ -156,22 +144,39 @@ favBtn.addEventListener('click', async () => {
   } catch {}
 });
 
-// Kinescope Player API for progress tracking
-window.addEventListener('message', (event) => {
-  if (!event.data || typeof event.data !== 'object') return;
-  const { type, payload } = event.data;
+// Kinescope Player SDK
+let kinescopePlayer = null;
+let playerCurrentTime = 0;
 
-  if (type === 'kinescopeTimeUpdate' && payload && !progressSent) {
-    const { currentTime, duration } = payload;
-    if (duration > 0 && currentTime / duration >= 0.8) {
+Kinescope.IframePlayer.create('kinescopePlayer', {
+  url: 'https://kinescope.io/<?= htmlspecialchars($lesson['kinescope_id'], ENT_QUOTES, 'UTF-8') ?>',
+  size: { width: '100%', height: '100%' },
+<?php if ($kinescopePassword): ?>
+  behavior: { autoPlay: false },
+<?php endif; ?>
+}).then(player => {
+  kinescopePlayer = player;
+
+<?php if ($kinescopePassword): ?>
+  player.once(Kinescope.IframePlayer.Events.Ready, () => {
+    player.setPassword('<?= addslashes($kinescopePassword) ?>');
+  });
+<?php endif; ?>
+
+  player.on(Kinescope.IframePlayer.Events.TimeUpdate, ({ data }) => {
+    playerCurrentTime = data.currentTime ?? 0;
+    if (!progressSent && data.duration > 0 && playerCurrentTime / data.duration >= 0.8) {
       progressSent = true;
-      sendProgress(currentTime, true);
+      sendProgress(Math.round(playerCurrentTime), true);
     }
-  }
-  if (type === 'kinescopeEnded') {
-    progressSent = true;
-    sendProgress(0, true);
-  }
+  });
+
+  player.on(Kinescope.IframePlayer.Events.Ended, ({ data }) => {
+    if (!progressSent) {
+      progressSent = true;
+      sendProgress(Math.round(data.duration ?? playerCurrentTime), true);
+    }
+  });
 });
 
 async function sendProgress(watchSeconds, completed) {
@@ -200,7 +205,7 @@ async function toggleDone() {
     await fetch('/api/cabinet/progress.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF },
-      body: JSON.stringify({ lesson_id: LESSON_ID, watch_seconds: 0, completed: isDone }),
+      body: JSON.stringify({ lesson_id: LESSON_ID, watch_seconds: Math.round(playerCurrentTime), completed: isDone }),
     });
   } catch {}
 }
