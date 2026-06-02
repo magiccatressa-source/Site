@@ -149,19 +149,10 @@ let kinescopePlayer = null;
 let playerCurrentTime = 0;
 
 Kinescope.IframePlayer.create('kinescopePlayer', {
-  url: 'https://kinescope.io/<?= htmlspecialchars($lesson['kinescope_id'], ENT_QUOTES, 'UTF-8') ?>',
+  url: 'https://kinescope.io/<?= htmlspecialchars($lesson['kinescope_id'], ENT_QUOTES, 'UTF-8') ?><?php if ($kinescopePassword): ?>?password=<?= urlencode($kinescopePassword) ?><?php endif; ?>',
   size: { width: '100%', height: '100%' },
-<?php if ($kinescopePassword): ?>
-  behavior: { autoPlay: false },
-<?php endif; ?>
 }).then(player => {
   kinescopePlayer = player;
-
-<?php if ($kinescopePassword): ?>
-  player.once(Kinescope.IframePlayer.Events.Ready, () => {
-    player.setPassword('<?= addslashes($kinescopePassword) ?>');
-  });
-<?php endif; ?>
 
   player.on(Kinescope.IframePlayer.Events.TimeUpdate, ({ data }) => {
     playerCurrentTime = data.currentTime ?? 0;
