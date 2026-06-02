@@ -149,7 +149,8 @@ favBtn.addEventListener('click', async () => {
 
 // DEBUG: log all postMessage events from Kinescope
 window.addEventListener('message', (e) => {
-  if (e.origin && e.origin.includes('kinescope')) console.log('[KS]', JSON.stringify(e.data));
+  const d = typeof e.data === 'string' ? e.data : JSON.stringify(e.data);
+  if (d && d.length < 500) console.log('[MSG]', e.origin, d);
 });
 
 // Time tracking via simple timer
