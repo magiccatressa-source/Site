@@ -147,41 +147,66 @@ favBtn.addEventListener('click', async () => {
   } catch {}
 });
 
-// DEBUG: log all postMessage events from Kinescope
-window.addEventListener('message', (e) => {
-  const d = typeof e.data === 'string' ? e.data : JSON.stringify(e.data);
-  if (d && d.length < 500) console.log('[MSG]', e.origin, d);
-});
-
-// Time tracking via simple timer
+// Time tracking via postMessage play event
 let playerCurrentTime = 0;
-const pageOpenedAt = Date.now();
-
-// Send accumulated time every 60 seconds
-setInterval(() => {
-  playerCurrentTime = Math.round((Date.now() - pageOpenedAt) / 1000);
-  sendProgress(playerCurrentTime, false);
-}, 60000);
-
-// Send on page leave
-window.addEventListener('beforeunload', () => {
-  playerCurrentTime = Math.round((Date.now() - pageOpenedAt) / 1000);
-  navigator.sendBeacon('/api/cabinet/progress.php',
-    JSON.stringify({ lesson_id: LESSON_ID, watch_seconds: playerCurrentTime, completed: false, _csrf: CSRF })
-  );
-});
-
-// Auto-complete if stayed long enough (lesson duration * 0.8)
+let playStartedAt = null;
+let accumulatedSeconds = 0;
 const LESSON_DURATION_SEC = <?= (int)($lesson['duration_min'] ?? 0) * 60 ?>;
-if (LESSON_DURATION_SEC > 0) {
-  setTimeout(() => {
+
+function getWatchedSeconds() {
+  if (playStartedAt) {
+    return accumulatedSeconds + Math.round((Date.now() - playStartedAt) / 1000);
+  }
+  return accumulatedSeconds;
+}
+
+window.addEventListener('message', (e) => {
+  if (!e.data) return;
+  const d = typeof e.data === 'string' ? e.data : JSON.stringify(e.data);
+  if (!d.includes('KINESCOPE')) return;
+
+  if (d.includes('KINESCOPE_PLAYER_PLAY_EVENT') && !playStartedAt) {
+    playStartedAt = Date.now();
+  }
+  if (d.includes('KINESCOPE_PLAYER_PAUSE_EVENT') && playStartedAt) {
+    accumulatedSeconds += Math.round((Date.now() - playStartedAt) / 1000);
+    playStartedAt = null;
+  }
+  if (d.includes('KINESCOPE_PLAYER_ENDED_EVENT')) {
+    playerCurrentTime = getWatchedSeconds();
     if (!progressSent) {
       progressSent = true;
-      playerCurrentTime = LESSON_DURATION_SEC;
-      sendProgress(LESSON_DURATION_SEC, true);
+      sendProgress(playerCurrentTime, true);
+    }
+  }
+});
+
+// Send accumulated time every 60 seconds while playing
+setInterval(() => {
+  playerCurrentTime = getWatchedSeconds();
+  if (playerCurrentTime > 0) sendProgress(playerCurrentTime, false);
+}, 60000);
+
+// Auto-complete after 80% of lesson duration
+if (LESSON_DURATION_SEC > 0) {
+  setTimeout(() => {
+    if (!progressSent && getWatchedSeconds() > 0) {
+      progressSent = true;
+      playerCurrentTime = getWatchedSeconds();
+      sendProgress(playerCurrentTime, true);
     }
   }, LESSON_DURATION_SEC * 0.8 * 1000);
 }
+
+// Send on page leave
+window.addEventListener('beforeunload', () => {
+  playerCurrentTime = getWatchedSeconds();
+  if (playerCurrentTime > 0) {
+    navigator.sendBeacon('/api/cabinet/progress.php',
+      JSON.stringify({ lesson_id: LESSON_ID, watch_seconds: playerCurrentTime, completed: false, _csrf: CSRF })
+    );
+  }
+});
 
 async function sendProgress(watchSeconds, completed) {
   try {
