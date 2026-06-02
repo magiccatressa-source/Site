@@ -52,7 +52,6 @@ $isFavorite = (bool)$favQ->fetch();
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/cabinet.css">
-<script src="https://player.kinescope.io/latest/iframe.player.js"></script>
 </head>
 <body>
 
@@ -92,7 +91,12 @@ $isFavorite = (bool)$favQ->fetch();
 
   <!-- Kinescope Player -->
   <div class="player-wrap" style="margin-bottom:32px">
-    <div id="kinescopePlayer"></div>
+    <iframe
+      id="kinescopePlayer"
+      src="https://kinescope.io/embed/<?= htmlspecialchars($lesson['kinescope_id'], ENT_QUOTES, 'UTF-8') ?>"
+      allow="autoplay; fullscreen; picture-in-picture"
+      allowfullscreen
+    ></iframe>
   </div>
 
   <!-- Done button -->
@@ -143,31 +147,40 @@ favBtn.addEventListener('click', async () => {
   } catch {}
 });
 
-// Kinescope Player SDK
-let kinescopePlayer = null;
+// DEBUG: log all postMessage events from Kinescope
+window.addEventListener('message', (e) => {
+  if (e.origin && e.origin.includes('kinescope')) console.log('[KS]', JSON.stringify(e.data));
+});
+
+// Time tracking via simple timer
 let playerCurrentTime = 0;
+const pageOpenedAt = Date.now();
 
-Kinescope.IframePlayer.create('kinescopePlayer', {
-  url: '<?= htmlspecialchars($lesson['kinescope_id'], ENT_QUOTES, 'UTF-8') ?>',
-  size: { width: '100%', height: '100%' },
-}).then(player => {
-  kinescopePlayer = player;
+// Send accumulated time every 60 seconds
+setInterval(() => {
+  playerCurrentTime = Math.round((Date.now() - pageOpenedAt) / 1000);
+  sendProgress(playerCurrentTime, false);
+}, 60000);
 
-  player.on(Kinescope.IframePlayer.Events.TimeUpdate, ({ data }) => {
-    playerCurrentTime = data.currentTime ?? 0;
-    if (!progressSent && data.duration > 0 && playerCurrentTime / data.duration >= 0.8) {
-      progressSent = true;
-      sendProgress(Math.round(playerCurrentTime), true);
-    }
-  });
+// Send on page leave
+window.addEventListener('beforeunload', () => {
+  playerCurrentTime = Math.round((Date.now() - pageOpenedAt) / 1000);
+  navigator.sendBeacon('/api/cabinet/progress.php',
+    JSON.stringify({ lesson_id: LESSON_ID, watch_seconds: playerCurrentTime, completed: false, _csrf: CSRF })
+  );
+});
 
-  player.on(Kinescope.IframePlayer.Events.Ended, ({ data }) => {
+// Auto-complete if stayed long enough (lesson duration * 0.8)
+const LESSON_DURATION_SEC = <?= (int)($lesson['duration_min'] ?? 0) * 60 ?>;
+if (LESSON_DURATION_SEC > 0) {
+  setTimeout(() => {
     if (!progressSent) {
       progressSent = true;
-      sendProgress(Math.round(data.duration ?? playerCurrentTime), true);
+      playerCurrentTime = LESSON_DURATION_SEC;
+      sendProgress(LESSON_DURATION_SEC, true);
     }
-  });
-});
+  }, LESSON_DURATION_SEC * 0.8 * 1000);
+}
 
 async function sendProgress(watchSeconds, completed) {
   try {
