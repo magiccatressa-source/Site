@@ -11,7 +11,6 @@ if (!has_active_access($sub)) {
     exit;
 }
 
-$kinescopePassword = setting('kinescope_password');
 $lessonId = (int)($_GET['id'] ?? 0);
 if (!$lessonId) {
     header('Location: /cabinet/');
@@ -149,7 +148,7 @@ let kinescopePlayer = null;
 let playerCurrentTime = 0;
 
 Kinescope.IframePlayer.create('kinescopePlayer', {
-  url: 'https://kinescope.io/embed/<?= htmlspecialchars($lesson['kinescope_id'], ENT_QUOTES, 'UTF-8') ?><?php if ($kinescopePassword): ?>?password=<?= urlencode($kinescopePassword) ?><?php endif; ?>',
+  url: 'https://kinescope.io/embed/<?= htmlspecialchars($lesson['kinescope_id'], ENT_QUOTES, 'UTF-8') ?>',
   size: { width: '100%', height: '100%' },
 }).then(player => {
   kinescopePlayer = player;
