@@ -56,7 +56,7 @@ $isFavorite = (bool)$favQ->fetch();
 <body>
 
 <header class="lk-header">
-  <a href="/" class="logo">Йога с Любовью</a>
+  <a href="/" class="logo">Любовь Лучистая</a>
   <nav>
     <a href="/cabinet/">← Все уроки</a>
     <a href="/cabinet/favorites.php">Избранное</a>

@@ -28,7 +28,7 @@ $subStatus = subscription_display_status($sub);
 </head>
 <body>
 <header class="lk-header">
-  <a href="/" class="logo">Йога с Любовью</a>
+  <a href="/" class="logo">Любовь Лучистая</a>
   <nav>
     <a href="/cabinet/">Кабинет</a>
     <a href="/cabinet/favorites.php">Избранное</a>
