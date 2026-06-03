@@ -11,8 +11,8 @@
   --ink-soft:     #3d3028;
   --muted:        #7a6a60;
   --white:        #fff;
-  --success:      #2d6a4f;
-  --success-bg:   #d8f3dc;
+  --success:      #2E3B2A;
+  --success-bg:   #2E3B2A;
   --warning:      #7d6000;
   --warning-bg:   #fff3cd;
   --danger:       #9B3A4A;
@@ -115,7 +115,7 @@ h1, h2, h3, h4 {
   letter-spacing: 0.02em;
 }
 
-.badge-active     { background: var(--success-bg); color: var(--success); }
+.badge-active     { background: var(--moss); color: var(--cream); }
 .badge-trial      { background: #dbeafe; color: #1e40af; }
 .badge-paused     { background: var(--warning-bg); color: var(--warning); }
 .badge-pending    { background: #fef3c7; color: #92400e; }
@@ -131,12 +131,13 @@ h1, h2, h3, h4 {
   text-decoration: none;
   cursor: pointer;
   border: none;
+  border-radius: 0;
   transition: background 0.2s, color 0.2s;
   letter-spacing: 0.01em;
 }
 
-.btn-primary  { background: var(--marsala); color: var(--cream); }
-.btn-primary:hover { background: var(--marsala-dark); color: var(--cream); text-decoration: none; }
+.btn-primary  { background: var(--ink); color: var(--cream); border-radius: 0; }
+.btn-primary:hover { background: var(--ink-soft); color: var(--cream); text-decoration: none; }
 
 .btn-outline {
   background: transparent;
@@ -255,10 +256,10 @@ h1, h2, h3, h4 {
   display: inline-block;
   font-size: 11px;
   font-family: 'Spectral', serif;
-  background: var(--marsala);
+  background: #C0532C;
   color: var(--cream) !important;
   padding: 1px 8px;
-  border-radius: 4px;
+  border-radius: 0;
   vertical-align: middle;
   letter-spacing: 0.03em;
 }
@@ -306,9 +307,9 @@ h1, h2, h3, h4 {
 }
 
 .lesson-item.completed .lesson-status-icon {
-  background: var(--success);
-  border-color: var(--success);
-  color: #fff;
+  background: var(--moss);
+  border-color: var(--moss);
+  color: var(--cream);
 }
 
 .lesson-title { flex: 1; font-size: 15px; }
@@ -412,24 +413,24 @@ h1, h2, h3, h4 {
   padding: 18px 56px;
   font-family: 'Instrument Serif', serif;
   font-size: 22px;
-  border-radius: 8px;
-  border: 2px solid var(--marsala);
+  border-radius: 0;
+  border: 2px solid var(--ink);
   background: transparent;
-  color: var(--marsala);
+  color: var(--ink);
   cursor: pointer;
   transition: all 0.3s ease;
   letter-spacing: 0.01em;
   min-width: 260px;
 }
 .btn-done:hover {
-  background: var(--marsala);
+  background: var(--ink);
   color: var(--cream);
   transform: scale(1.03);
 }
 .btn-done.done {
-  background: #2d6a4f !important;
-  border-color: #2d6a4f !important;
-  color: #fff !important;
+  background: var(--moss) !important;
+  border-color: var(--moss) !important;
+  color: var(--cream) !important;
   transform: scale(1.05);
 }
 
@@ -446,8 +447,8 @@ h1, h2, h3, h4 {
   font-weight: bold;
 }
 .lesson-item.completed .lesson-status-icon {
-  background: var(--success-bg);
-  color: var(--success);
+  background: var(--moss);
+  color: var(--cream);
 }
 .lesson-item:not(.completed) .lesson-status-icon {
   visibility: hidden;
@@ -469,9 +470,9 @@ h1, h2, h3, h4 {
 .stat-card {
   flex: 1;
   min-width: 140px;
-  background: var(--white);
+  background: var(--cream-deep);
   border: 1px solid var(--cream-deep);
-  border-radius: 12px;
+  border-radius: 0;
   padding: 20px 24px;
   text-align: center;
 }
