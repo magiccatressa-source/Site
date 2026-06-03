@@ -91,7 +91,7 @@ if ($isTrial && $sub && $sub['expires_at']) {
     </div>
     <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--cream-deep)">
       <p style="font-size:14px;color:var(--ink-soft);margin-bottom:12px">Понравилось? Оформите подписку и получите полный доступ - живые эфиры 2 раза в неделю, все записи уроков и ответы на вопросы.</p>
-      <a href="https://t.me/indicatrisa" target="_blank" class="btn btn-primary btn-sm">Оформить подписку ↗</a>
+      <a href="https://t.me/indicatrisa" target="_blank" class="btn btn-primary btn-sm">Оформить подписку →</a>
     </div>
   </div>
   <?php endif; ?>
@@ -129,7 +129,7 @@ if ($isTrial && $sub && $sub['expires_at']) {
       <a href="<?= htmlspecialchars($zoomLink, ENT_QUOTES, 'UTF-8') ?>"
          target="_blank" rel="noopener"
          class="btn btn-primary btn-sm" style="align-self:flex-start">
-        Открыть Zoom ↗
+        Открыть Zoom →
       </a>
     </div>
     <?php endif; ?>
@@ -140,7 +140,7 @@ if ($isTrial && $sub && $sub['expires_at']) {
       <a href="<?= htmlspecialchars($tgChat, ENT_QUOTES, 'UTF-8') ?>"
          target="_blank" rel="noopener"
          class="btn btn-outline btn-sm" style="align-self:flex-start">
-        Telegram-чат ↗
+        Telegram-чат →
       </a>
     </div>
     <?php endif; ?>
@@ -171,7 +171,7 @@ if ($isTrial && $sub && $sub['expires_at']) {
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <a href="https://t.me/indicatrisa" target="_blank" rel="noopener"
          class="btn btn-primary btn-sm">
-        Оплатить подписку ↗
+        Оплатить подписку →
       </a>
       <?php if ($hasAccess): ?>
       <button class="btn btn-outline btn-sm" onclick="document.getElementById('pauseForm').style.display='block';this.style.display='none'">

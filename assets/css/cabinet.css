@@ -137,14 +137,14 @@ h1, h2, h3, h4 {
 }
 
 .btn-primary  { background: var(--ink); color: var(--cream); border-radius: 0; }
-.btn-primary:hover { background: var(--ink-soft); color: var(--cream); text-decoration: none; }
+.btn-primary:hover { background: #3B312A; color: var(--cream); text-decoration: none; }
 
 .btn-outline {
   background: transparent;
-  border: 1px solid var(--marsala);
-  color: var(--marsala);
+  border: 1px solid var(--ink);
+  color: var(--ink);
 }
-.btn-outline:hover { background: var(--marsala); color: var(--cream); text-decoration: none; }
+.btn-outline:hover { background: var(--ink); color: var(--cream); text-decoration: none; }
 
 .btn-ghost {
   background: transparent;
