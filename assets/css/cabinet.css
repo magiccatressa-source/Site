@@ -137,7 +137,7 @@ h1, h2, h3, h4 {
 }
 
 .btn-primary  { background: var(--ink); color: var(--cream); border-radius: 0; }
-.btn-primary:hover { background: #3B312A; color: var(--cream); text-decoration: none; }
+.btn-primary:hover { background: #C0532C; color: var(--cream); text-decoration: none; }
 
 .btn-outline {
   background: transparent;
