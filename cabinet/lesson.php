@@ -100,7 +100,7 @@ $isFavorite = (bool)$favQ->fetch();
   </div>
 
   <!-- Rotation hint for mobile -->
-  <p class="rotation-hint">📱 Для просмотра горизонтально — отключите блокировку поворота на телефоне</p>
+  <p class="rotation-hint">Для просмотра горизонтально — отключите блокировку поворота на телефоне</p>
 
   <!-- Done button -->
   <div style="text-align:center; margin-bottom:32px">
