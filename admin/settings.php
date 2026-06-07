@@ -73,7 +73,7 @@ $admin = require_admin();
     <!-- Trial lesson -->
     <div class="acard">
       <div class="acard-title">Пробный урок (страница /trial)</div>
-      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Этот урок доступен по ссылке <strong>lubov-yoga.ru/trial</strong> без регистрации — можно давать в Instagram и рассылках</p>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Этот урок доступен по ссылке <strong>luchistaya-yoga.ru/trial</strong> без регистрации — можно давать в Instagram и рассылках</p>
       <form id="trialForm">
         <?= csrf_field() ?>
         <div class="form-group">
