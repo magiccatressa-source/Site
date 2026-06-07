@@ -5,6 +5,10 @@ require_once __DIR__ . '/../includes/csrf.php';
 
 $user = require_login();
 $sub = get_subscription($user['id']);
+$isReturning = has_paid_before($user['id']);
+$suggestedAmount = $isReturning ? 3000 : 3500;
+define('SBP_PHONE', '+79125880826');
+define('SBP_PHONE_DISPLAY', '+7 912 588-08-26');
 
 $statusLabels = [
     'active'          => 'Активна',
@@ -123,7 +127,7 @@ $subStatus = subscription_display_status($sub);
     </form>
   </div>
 
-  <!-- Subscription history -->
+  <!-- Subscription -->
   <div class="card" style="margin-bottom:24px">
     <p class="card-title">Подписка</p>
     <?php if ($sub): ?>
@@ -136,11 +140,33 @@ $subStatus = subscription_display_status($sub);
     <?php else: ?>
     <p style="color:var(--muted); font-size:14px">Подписка не оформлена.</p>
     <?php endif; ?>
-    <div style="margin-top:12px">
-      <a href="https://t.me/indicatrisa" target="_blank" class="btn btn-outline btn-sm">
-        Оплатить / продлить подписку ↗
-      </a>
+  </div>
+
+  <!-- Payment -->
+  <div class="card" style="margin-bottom:24px">
+    <p class="card-title">Оплата подписки</p>
+
+    <p style="font-size:15px; margin-bottom:4px">
+      Сумма: <strong><?= $suggestedAmount ?> ₽</strong>
+      <?php if ($isReturning): ?>
+        <span style="font-size:13px; color:var(--muted)">(постоянный клиент)</span>
+      <?php else: ?>
+        <span style="font-size:13px; color:var(--muted)">(первая подписка)</span>
+      <?php endif; ?>
+    </p>
+    <p style="font-size:13px; color:var(--muted); margin-bottom:20px">Если договорились о другой сумме — просто переведите её.</p>
+
+    <p style="font-size:14px; margin-bottom:8px">Переведите через СБП по номеру телефона:</p>
+    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:6px">
+      <span style="font-size:24px; font-weight:600; letter-spacing:1px"><?= SBP_PHONE_DISPLAY ?></span>
+      <button class="btn btn-outline btn-sm" onclick="copyPhone(this)">Скопировать</button>
     </div>
+    <p style="font-size:13px; color:var(--muted); margin-bottom:24px">Получатель: Любовь Николаевна Б. · <strong>Т-Банк</strong></p>
+
+    <a id="tgPaidBtn" href="#" target="_blank" class="btn btn-primary btn-sm" style="text-decoration:none">
+      Оплачено ✓
+    </a>
+    <p style="font-size:12px; color:var(--muted); margin-top:8px">Кнопка откроет Telegram с готовым сообщением</p>
   </div>
 
   <!-- Delete account -->
@@ -240,6 +266,23 @@ pwdForm.addEventListener('submit', async (e) => {
     alertPwd.style.display = 'block';
   } finally { btn.disabled = false; }
 });
+
+// ── Payment block ─────────────────────────────────────────────
+const userName = <?= json_encode($user['name'], JSON_UNESCAPED_UNICODE) ?>;
+const payAmount = <?= $suggestedAmount ?>;
+
+function copyPhone(btn) {
+  navigator.clipboard.writeText('<?= SBP_PHONE ?>').then(() => {
+    btn.textContent = 'Скопировано!';
+    setTimeout(() => btn.textContent = 'Скопировать', 2000);
+  });
+}
+
+// Кнопка "Я оплатила" → открывает Telegram с готовым сообщением
+(function() {
+  const msg = encodeURIComponent('Оплата подписки от ' + userName);
+  document.getElementById('tgPaidBtn').href = 'https://t.me/indicatrisa?text=' + msg;
+})();
 
 async function confirmDelete() {
   if (!confirm('Удалить аккаунт навсегда? Это действие необратимо.')) return;

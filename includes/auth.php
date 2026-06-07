@@ -88,6 +88,14 @@ function get_subscription(int $userId): ?array {
     return $s->fetch() ?: null;
 }
 
+function has_paid_before(int $userId): bool {
+    $s = db()->prepare(
+        "SELECT COUNT(*) FROM subscriptions WHERE user_id = ? AND payment_status = 'paid'"
+    );
+    $s->execute([$userId]);
+    return (int)$s->fetchColumn() > 0;
+}
+
 function has_active_access(?array $sub): bool {
     if (!$sub) return false;
     return in_array($sub['status'], ['active', 'trial'], true);
