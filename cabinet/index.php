@@ -166,14 +166,14 @@ if ($isTrial && $sub && $sub['expires_at']) {
       </span>
       <?php endif; ?>
     </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <?php $isReturning = has_paid_before($user['id']); $suggestedAmount = $isReturning ? 3000 : 3500; $isActive = true; include __DIR__ . '/partials/payment-block.php'; ?>
-      <?php if ($hasAccess): ?>
+    <?php $isReturning = has_paid_before($user['id']); $suggestedAmount = $isReturning ? 3000 : 3500; $isActive = true; include __DIR__ . '/partials/payment-block.php'; ?>
+    <?php if ($hasAccess): ?>
+    <div style="margin-top:12px">
       <button class="btn btn-outline btn-sm" onclick="document.getElementById('pauseForm').style.display='block';this.style.display='none'">
         Заморозить
       </button>
-      <?php endif; ?>
     </div>
+    <?php endif; ?>
     <?php if ($hasAccess): ?>
     <div id="pauseForm" style="display:none;margin-top:16px;padding:16px;background:var(--cream-deep);border-radius:8px">
       <p style="font-size:14px;margin-bottom:12px;color:var(--ink-soft)">Заявка на заморозку подписки — я рассмотрю и продлю вашу подписку на указанное количество дней</p>
