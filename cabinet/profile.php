@@ -280,7 +280,7 @@ function copyPhone(btn) {
 
 // Кнопка "Я оплатила" → открывает Telegram с готовым сообщением
 (function() {
-  const msg = encodeURIComponent('Оплата подписки от ' + userName);
+  const msg = encodeURIComponent('Любовь, привет! Подписка оплачена! ' + userName);
   document.getElementById('tgPaidBtn').href = 'https://t.me/indicatrisa?text=' + msg;
 })();
 

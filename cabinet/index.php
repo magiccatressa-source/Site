@@ -91,7 +91,7 @@ if ($isTrial && $sub && $sub['expires_at']) {
     </div>
     <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--cream-deep)">
       <p style="font-size:14px;color:var(--ink-soft);margin-bottom:12px">Понравилось? Оформите подписку и получите полный доступ - живые эфиры 2 раза в неделю, все записи уроков и ответы на вопросы.</p>
-      <a href="https://t.me/indicatrisa" target="_blank" class="btn btn-primary btn-sm">Оформить подписку →</a>
+      <?php $isReturning = has_paid_before($user['id']); $suggestedAmount = $isReturning ? 3000 : 3500; $isActive = false; include __DIR__ . '/partials/payment-block.php'; ?>
     </div>
   </div>
   <?php endif; ?>
@@ -115,9 +115,7 @@ if ($isTrial && $sub && $sub['expires_at']) {
     <p style="color:var(--muted); font-size:14px; margin-bottom:20px">
       Оплатите подписку и получите доступ к архиву <?= $lessonCount > 0 ? $lessonCount . '+' : '' ?> уроков йоги
     </p>
-    <a href="https://t.me/indicatrisa" target="_blank" class="btn btn-primary">
-      Оформить подписку
-    </a>
+    <?php $isReturning = has_paid_before($user['id']); $suggestedAmount = $isReturning ? 3000 : 3500; $isActive = false; include __DIR__ . '/partials/payment-block.php'; ?>
   </div>
   <?php endif; ?>
 
@@ -169,10 +167,7 @@ if ($isTrial && $sub && $sub['expires_at']) {
       <?php endif; ?>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <a href="https://t.me/indicatrisa" target="_blank" rel="noopener"
-         class="btn btn-primary btn-sm">
-        Оплатить подписку →
-      </a>
+      <?php $isReturning = has_paid_before($user['id']); $suggestedAmount = $isReturning ? 3000 : 3500; $isActive = true; include __DIR__ . '/partials/payment-block.php'; ?>
       <?php if ($hasAccess): ?>
       <button class="btn btn-outline btn-sm" onclick="document.getElementById('pauseForm').style.display='block';this.style.display='none'">
         ⏸ Заморозить
@@ -425,6 +420,13 @@ function escHtml(s) {
 
 loadTopics();
 <?php endif; ?>
+
+function copyPayPhone(btn) {
+  navigator.clipboard.writeText('+79125880826').then(() => {
+    btn.textContent = 'Скопировано!';
+    setTimeout(() => btn.textContent = 'Скопировать', 2000);
+  });
+}
 </script>
 </body>
 </html>
