@@ -170,7 +170,7 @@ if ($isTrial && $sub && $sub['expires_at']) {
       <?php $isReturning = has_paid_before($user['id']); $suggestedAmount = $isReturning ? 3000 : 3500; $isActive = true; include __DIR__ . '/partials/payment-block.php'; ?>
       <?php if ($hasAccess): ?>
       <button class="btn btn-outline btn-sm" onclick="document.getElementById('pauseForm').style.display='block';this.style.display='none'">
-        ⏸ Заморозить
+        Заморозить
       </button>
       <?php endif; ?>
     </div>

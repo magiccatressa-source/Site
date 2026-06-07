@@ -154,19 +154,17 @@ $subStatus = subscription_display_status($sub);
         <span style="font-size:13px; color:var(--muted)">(первая подписка)</span>
       <?php endif; ?>
     </p>
-    <p style="font-size:13px; color:var(--muted); margin-bottom:20px">Если договорились о другой сумме — просто переведите её.</p>
-
     <p style="font-size:14px; margin-bottom:8px">Переведите через СБП по номеру телефона:</p>
     <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:6px">
       <span style="font-size:24px; font-weight:600; letter-spacing:1px"><?= SBP_PHONE_DISPLAY ?></span>
       <button class="btn btn-outline btn-sm" onclick="copyPhone(this)">Скопировать</button>
     </div>
-    <p style="font-size:13px; color:var(--muted); margin-bottom:24px">Получатель: Любовь Николаевна Б. · <strong>Т-Банк</strong></p>
+    <p style="font-size:13px; font-weight:500; color:#C0532C; margin-bottom:24px">Получатель: Любовь Николаевна Б. · Т-Банк</p>
 
     <a id="tgPaidBtn" href="#" class="btn btn-primary btn-sm" style="text-decoration:none">
-      Оплачено ✓
+      Нажми после оплаты
     </a>
-    <p style="font-size:12px; color:var(--muted); margin-top:8px">Кнопка откроет Telegram с готовым сообщением</p>
+    <p style="font-size:12px; color:var(--muted); margin-top:8px">Кнопка отправляет мне сообщение в ТГ, чтобы я активировала подписку</p>
   </div>
 
   <!-- Delete account -->
@@ -280,7 +278,7 @@ function copyPhone(btn) {
 
 // Кнопка "Я оплатила" → открывает Telegram с готовым сообщением
 (function() {
-  const msg = encodeURIComponent('Любовь, привет! Подписка оплачена! ' + userName);
+  const msg = encodeURIComponent('Любовь, привет! Подписка оплачена! ' + userName + '.');
   document.getElementById('tgPaidBtn').href = 'https://t.me/indicatrisa?text=' + msg;
 })();
 
