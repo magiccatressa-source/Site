@@ -70,6 +70,22 @@ $admin = require_admin();
       </form>
     </div>
 
+    <!-- Trial lesson -->
+    <div class="acard">
+      <div class="acard-title">Пробный урок (страница /trial)</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Этот урок доступен по ссылке <strong>lubov-yoga.ru/trial</strong> без регистрации — можно давать в Instagram и рассылках</p>
+      <form id="trialForm">
+        <?= csrf_field() ?>
+        <div class="form-group">
+          <label>Урок</label>
+          <select class="form-control" name="trial_lesson_id" id="trial_lesson_id">
+            <option value="">— не выбран —</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary" id="saveTrialBtn">Сохранить</button>
+      </form>
+    </div>
+
     <!-- Pause requests -->
     <div class="acard" id="pauseRequestsCard">
       <div class="acard-title">Заявки на заморозку</div>
@@ -141,13 +157,27 @@ async function reviewPause(id, action) {
   else showAlert('Ошибка: ' + (data.error || 'неизвестная'), 'error');
 }
 
-// Load settings
-fetch('/api/admin/settings.php').then(r => r.json()).then(data => {
-  if (!data.ok) return;
-  ['zoom_link','telegram_chat_link','schedule_text','welcome_kinescope_id','kinescope_password','welcome_text'].forEach(k => {
-    const el = document.getElementById(k);
-    if (el) el.value = data[k] || '';
-  });
+// Load settings + lessons list in parallel
+Promise.all([
+  fetch('/api/admin/settings.php').then(r => r.json()),
+  fetch('/api/admin/lessons-list.php').then(r => r.json()),
+]).then(([settings, lessonsData]) => {
+  if (settings.ok) {
+    ['zoom_link','telegram_chat_link','schedule_text','welcome_kinescope_id','kinescope_password','welcome_text'].forEach(k => {
+      const el = document.getElementById(k);
+      if (el) el.value = settings[k] || '';
+    });
+  }
+  const sel = document.getElementById('trial_lesson_id');
+  if (lessonsData.ok) {
+    lessonsData.lessons.forEach(l => {
+      const opt = document.createElement('option');
+      opt.value = l.id;
+      opt.textContent = l.title + (l.topic_title ? ' [' + l.topic_title + ']' : '');
+      sel.appendChild(opt);
+    });
+  }
+  if (settings.ok && settings.trial_lesson_id) sel.value = settings.trial_lesson_id;
 });
 
 function showAlert(msg, type = 'success') {
@@ -196,6 +226,23 @@ document.getElementById('welcomeForm').addEventListener('submit', async (e) => {
     });
     const data = await res.json();
     showAlert(data.ok ? 'Приветственное видео сохранено.' : 'Ошибка.', data.ok ? 'success' : 'error');
+  } catch { showAlert('Ошибка соединения.','error'); }
+  finally { btn.disabled = false; }
+});
+
+// Save trial lesson
+document.getElementById('trialForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('saveTrialBtn');
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/admin/settings.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF },
+      body: JSON.stringify({ trial_lesson_id: document.getElementById('trial_lesson_id').value }),
+    });
+    const data = await res.json();
+    showAlert(data.ok ? 'Пробный урок сохранён.' : 'Ошибка.', data.ok ? 'success' : 'error');
   } catch { showAlert('Ошибка соединения.','error'); }
   finally { btn.disabled = false; }
 });
