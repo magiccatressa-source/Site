@@ -1165,6 +1165,35 @@ section { padding: 112px 0; }
 .hero h1 { animation: fadeUp 0.7s ease 0.2s both; }
 .hero-lead { animation: fadeUp 0.7s ease 0.35s both; }
 .hero-ctas { animation: fadeUp 0.7s ease 0.5s both; }
+
+/* ── Back to top button ── */
+#back-to-top {
+  position: fixed;
+  bottom: 24px;
+  right: 20px;
+  z-index: 999;
+  width: 44px;
+  height: 44px;
+  border-radius: 3px;
+  background: var(--sienna);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none;
+}
+#back-to-top.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+#back-to-top svg { display: block; }
 </style>
 </head>
 <body>
@@ -1567,6 +1596,22 @@ fetch('/api/lesson-count.php').then(r => r.json()).then(d => {
     });
   }
 }).catch(() => {});
+</script>
+
+<!-- Back to top -->
+<button id="back-to-top" aria-label="Наверх" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 15V5M10 5L5 10M10 5L15 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</button>
+<script>
+(function(){
+  var btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', function(){
+    if (window.scrollY > 400) btn.classList.add('visible');
+    else btn.classList.remove('visible');
+  }, {passive: true});
+})();
 </script>
 
 </body>

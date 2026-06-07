@@ -382,6 +382,18 @@ h1, h2, h3, h4 {
   border: none;
 }
 
+/* ── Rotation hint (mobile only) ── */
+.rotation-hint {
+  display: none;
+  font-size: 13px;
+  color: var(--ink-60, #888);
+  text-align: center;
+  margin: -20px 0 24px;
+}
+@media (max-width: 767px) {
+  .rotation-hint { display: block; }
+}
+
 /* ── Info row (Zoom + TG) ────────────────────────────────── */
 .info-row {
   display: flex;

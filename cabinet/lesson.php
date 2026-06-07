@@ -99,6 +99,9 @@ $isFavorite = (bool)$favQ->fetch();
     ></iframe>
   </div>
 
+  <!-- Rotation hint for mobile -->
+  <p class="rotation-hint">📱 Для просмотра горизонтально — отключите блокировку поворота на телефоне</p>
+
   <!-- Done button -->
   <div style="text-align:center; margin-bottom:32px">
     <button id="doneBtn" class="btn-done<?= $isCompleted ? ' done' : '' ?>"
