@@ -144,7 +144,7 @@ $subStatus = subscription_display_status($sub);
 
   <!-- Payment -->
   <div class="card" style="margin-bottom:24px">
-    <p class="card-title">Оплата подписки</p>
+    <p class="card-title"><?= ($subStatus === 'active' || $subStatus === 'paused') ? 'Продлить подписку' : 'Оплатить подписку' ?></p>
 
     <p style="font-size:15px; margin-bottom:4px">
       Сумма: <strong><?= $suggestedAmount ?> ₽</strong>
