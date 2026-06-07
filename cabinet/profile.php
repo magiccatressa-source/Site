@@ -163,7 +163,7 @@ $subStatus = subscription_display_status($sub);
     </div>
     <p style="font-size:13px; color:var(--muted); margin-bottom:24px">Получатель: Любовь Николаевна Б. · <strong>Т-Банк</strong></p>
 
-    <a id="tgPaidBtn" href="#" target="_blank" class="btn btn-primary btn-sm" style="text-decoration:none">
+    <a id="tgPaidBtn" href="#" class="btn btn-primary btn-sm" style="text-decoration:none">
       Оплачено ✓
     </a>
     <p style="font-size:12px; color:var(--muted); margin-top:8px">Кнопка откроет Telegram с готовым сообщением</p>
@@ -281,7 +281,7 @@ function copyPhone(btn) {
 // Кнопка "Я оплатила" → открывает Telegram с готовым сообщением
 (function() {
   const msg = encodeURIComponent('Оплата подписки от ' + userName);
-  document.getElementById('tgPaidBtn').href = 'tg://resolve?domain=indicatrisa&text=' + msg;
+  document.getElementById('tgPaidBtn').href = 'https://t.me/indicatrisa?text=' + msg;
 })();
 
 async function confirmDelete() {
