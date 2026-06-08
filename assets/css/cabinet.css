@@ -77,6 +77,8 @@ h1, h2, h3, h4 {
 }
 
 .lk-header nav a:hover { color: var(--marsala); }
+.lk-header nav a.btn-primary { color: var(--cream); }
+.lk-header nav a.btn-primary:hover { color: var(--cream); }
 
 .lk-main {
   max-width: 960px;
