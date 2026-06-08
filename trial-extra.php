@@ -1,39 +1,34 @@
 <?php
 require_once __DIR__ . '/includes/db.php';
 
-$lessonId = (int)setting('trial_lesson_id');
-$lesson = null;
-
-if ($lessonId) {
+function fetchLesson(int $id): ?array {
+    if (!$id) return null;
     $s = db()->prepare(
         'SELECT l.id, l.title, l.description, l.kinescope_id, l.duration_min, t.title AS topic_title
          FROM lessons l
          JOIN topics t ON t.id = l.topic_id
          WHERE l.id = ? AND l.is_visible = 1'
     );
-    $s->execute([$lessonId]);
-    $lesson = $s->fetch();
+    $s->execute([$id]);
+    return $s->fetch() ?: null;
 }
 
-if (!$lesson) {
+$lesson2 = fetchLesson((int)setting('trial_lesson_id_2'));
+$lesson3 = fetchLesson((int)setting('trial_lesson_id_3'));
+
+if (!$lesson2 && !$lesson3) {
     http_response_code(404);
-    echo '<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><title>Урок недоступен</title></head><body><h1>Урок недоступен</h1><p><a href="/">На главную</a></p></body></html>';
+    echo '<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><title>Уроки недоступны</title></head><body><h1>Уроки недоступны</h1><p><a href="/trial">Вернуться к пробному уроку</a></p></body></html>';
     exit;
 }
-
-$title       = htmlspecialchars($lesson['title'], ENT_QUOTES, 'UTF-8');
-$description = htmlspecialchars(mb_substr((string)($lesson['description'] ?? ''), 0, 120), ENT_QUOTES, 'UTF-8');
-$kinescopeId = htmlspecialchars($lesson['kinescope_id'], ENT_QUOTES, 'UTF-8');
-$duration    = (int)$lesson['duration_min'];
-$topicTitle  = htmlspecialchars($lesson['topic_title'], ENT_QUOTES, 'UTF-8');
 ?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><?= $title ?> — Пробный урок · Любовь Лучистая</title>
-<meta name="description" content="Бесплатный пробный урок от Любови Лучистой. <?= $description ?>">
+<title>Ещё зарядки — бесплатно · Любовь Лучистая</title>
+<meta name="description" content="Ещё два бесплатных урока йоги от Любови Лучистой.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500&family=Spectral:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap" rel="stylesheet">
@@ -59,6 +54,14 @@ $topicTitle  = htmlspecialchars($lesson['topic_title'], ENT_QUOTES, 'UTF-8');
   font-weight: 300;
   line-height: 1.65;
   color: #3B312A;
+}
+.trial-lesson-block {
+  margin-bottom: 56px;
+  padding-bottom: 56px;
+  border-bottom: 1px solid #C9BBA0;
+}
+.trial-lesson-block:last-of-type {
+  border-bottom: none;
 }
 .trial-cta {
   background: #E8DEC6;
@@ -102,8 +105,6 @@ $topicTitle  = htmlspecialchars($lesson['topic_title'], ENT_QUOTES, 'UTF-8');
 .ll-btn-primary:hover  { opacity: 0.85; }
 .ll-btn-secondary { background: transparent; color: #1B1612; border: 1.5px solid #1B1612; }
 .ll-btn-secondary:hover { background: rgba(27,22,18,0.06); }
-.ll-btn-ghost { background: transparent; color: #3B312A; border: 1.5px solid #C9BBA0; }
-.ll-btn-ghost:hover { border-color: #1B1612; }
 @media (max-width: 600px) {
   .trial-cta { padding: 32px 20px; }
   .trial-cta__actions { flex-direction: column; }
@@ -122,45 +123,60 @@ $topicTitle  = htmlspecialchars($lesson['topic_title'], ENT_QUOTES, 'UTF-8');
 </header>
 
 <main class="lk-main">
-  <div class="trial-eyebrow">Пробный урок</div>
 
-  <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:20px">
-    <h1 style="font-size:28px; line-height:1.2"><?= $title ?></h1>
-    <?php if ($duration): ?>
-    <span style="font-size:14px; color:var(--muted); flex-shrink:0; margin-top:6px"><?= $duration ?> мин</span>
+  <div class="trial-eyebrow">Бесплатные уроки</div>
+  <h1 style="font-family:'Instrument Serif',Georgia,serif; font-size:clamp(32px,5vw,52px); font-weight:400; letter-spacing:-0.01em; line-height:1.05; margin-bottom:40px">Ещё два урока</h1>
+
+  <?php foreach ([$lesson2, $lesson3] as $i => $lesson): ?>
+  <?php if (!$lesson) continue; ?>
+  <?php
+    $title       = htmlspecialchars($lesson['title'], ENT_QUOTES, 'UTF-8');
+    $description = $lesson['description'] ?? '';
+    $kinescopeId = htmlspecialchars($lesson['kinescope_id'], ENT_QUOTES, 'UTF-8');
+    $duration    = (int)$lesson['duration_min'];
+  ?>
+  <div class="trial-lesson-block">
+    <div class="trial-eyebrow">Урок <?= $i + 2 ?> · бесплатно</div>
+
+    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:20px">
+      <h2 style="font-family:'Instrument Serif',Georgia,serif; font-size:clamp(22px,3vw,36px); font-weight:400; letter-spacing:-0.01em; line-height:1.1"><?= $title ?></h2>
+      <?php if ($duration): ?>
+      <span style="font-family:'Instrument Sans',sans-serif; font-size:13px; letter-spacing:0.06em; color:#3B312A; flex-shrink:0; margin-top:6px"><?= $duration ?> мин</span>
+      <?php endif; ?>
+    </div>
+
+    <div class="player-wrap" style="margin-bottom:24px">
+      <iframe
+        src="https://kinescope.io/embed/<?= $kinescopeId ?>"
+        allow="autoplay; fullscreen; picture-in-picture"
+        allowfullscreen
+      ></iframe>
+    </div>
+
+    <p class="rotation-hint">Для просмотра горизонтально — отключите блокировку поворота на телефоне</p>
+
+    <?php if ($description): ?>
+    <div class="trial-desc-card">
+      <div class="trial-eyebrow">Описание урока</div>
+      <div class="trial-desc-text">
+        <?= nl2br(htmlspecialchars($description, ENT_QUOTES, 'UTF-8')) ?>
+      </div>
+    </div>
     <?php endif; ?>
   </div>
-
-  <div class="player-wrap" style="margin-bottom:32px">
-    <iframe
-      src="https://kinescope.io/embed/<?= $kinescopeId ?>"
-      allow="autoplay; fullscreen; picture-in-picture"
-      allowfullscreen
-    ></iframe>
-  </div>
-
-  <p class="rotation-hint">Для просмотра горизонтально — отключите блокировку поворота на телефоне</p>
-
-  <?php if ($lesson['description']): ?>
-  <div class="trial-desc-card">
-    <div class="trial-eyebrow">Описание урока</div>
-    <div class="trial-desc-text">
-      <?= nl2br(htmlspecialchars((string)$lesson['description'], ENT_QUOTES, 'UTF-8')) ?>
-    </div>
-  </div>
-  <?php endif; ?>
+  <?php endforeach; ?>
 
   <div class="trial-cta">
-    <div class="trial-eyebrow">Урок 1 · бесплатно</div>
-    <h2>Понравился урок?</h2>
+    <div class="trial-eyebrow">Клуб Любови Лучистой</div>
+    <h2>Хотите заниматься каждый день?</h2>
     <p>В клубе — больше 100 уроков по йоге, живые занятия в Zoom и поддерживающее сообщество.</p>
     <div class="trial-cta__actions">
-      <a href="/trial-extra" class="ll-btn ll-btn-ghost">Ещё зарядки →</a>
       <a href="https://t.me/indicatrisa" target="_blank" rel="noopener" class="ll-btn ll-btn-secondary">Подписаться в TG →</a>
       <a href="https://vk.com/lubov.yoga" target="_blank" rel="noopener" class="ll-btn ll-btn-secondary">Подписаться в VK →</a>
       <a href="/#join" class="ll-btn ll-btn-primary">Вступить в клуб →</a>
     </div>
   </div>
+
 </main>
 
 </body>

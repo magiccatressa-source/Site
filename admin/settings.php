@@ -72,13 +72,28 @@ $admin = require_admin();
 
     <!-- Trial lesson -->
     <div class="acard">
-      <div class="acard-title">Пробный урок (страница /trial)</div>
-      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Этот урок доступен по ссылке <strong>luchistaya-yoga.ru/trial</strong> без регистрации — можно давать в Instagram и рассылках</p>
+      <div class="acard-title">Пробные уроки</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">
+        <strong>/trial</strong> — главная страница пробного урока (Урок 1).<br>
+        <strong>/trial-extra</strong> — страница «Ещё зарядки» с Уроком 2 и Уроком 3.
+      </p>
       <form id="trialForm">
         <?= csrf_field() ?>
         <div class="form-group">
-          <label>Урок</label>
+          <label>Урок 1 — страница /trial</label>
           <select class="form-control" name="trial_lesson_id" id="trial_lesson_id">
+            <option value="">— не выбран —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Урок 2 — страница /trial-extra</label>
+          <select class="form-control" name="trial_lesson_id_2" id="trial_lesson_id_2">
+            <option value="">— не выбран —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Урок 3 — страница /trial-extra</label>
+          <select class="form-control" name="trial_lesson_id_3" id="trial_lesson_id_3">
             <option value="">— не выбран —</option>
           </select>
         </div>
@@ -170,14 +185,19 @@ Promise.all([
   }
   const sel = document.getElementById('trial_lesson_id');
   if (lessonsData.ok) {
-    lessonsData.lessons.forEach(l => {
-      const opt = document.createElement('option');
-      opt.value = l.id;
-      opt.textContent = l.title + (l.topic_title ? ' [' + l.topic_title + ']' : '');
-      sel.appendChild(opt);
+    ['trial_lesson_id','trial_lesson_id_2','trial_lesson_id_3'].forEach(selId => {
+      const s = document.getElementById(selId);
+      lessonsData.lessons.forEach(l => {
+        const opt = document.createElement('option');
+        opt.value = l.id;
+        opt.textContent = l.title + (l.topic_title ? ' [' + l.topic_title + ']' : '');
+        s.appendChild(opt);
+      });
     });
   }
-  if (settings.ok && settings.trial_lesson_id) sel.value = settings.trial_lesson_id;
+  if (settings.ok && settings.trial_lesson_id)   document.getElementById('trial_lesson_id').value   = settings.trial_lesson_id;
+  if (settings.ok && settings.trial_lesson_id_2) document.getElementById('trial_lesson_id_2').value = settings.trial_lesson_id_2;
+  if (settings.ok && settings.trial_lesson_id_3) document.getElementById('trial_lesson_id_3').value = settings.trial_lesson_id_3;
 });
 
 function showAlert(msg, type = 'success') {
@@ -239,7 +259,11 @@ document.getElementById('trialForm').addEventListener('submit', async (e) => {
     const res = await fetch('/api/admin/settings.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF },
-      body: JSON.stringify({ trial_lesson_id: document.getElementById('trial_lesson_id').value }),
+      body: JSON.stringify({
+        trial_lesson_id:   document.getElementById('trial_lesson_id').value,
+        trial_lesson_id_2: document.getElementById('trial_lesson_id_2').value,
+        trial_lesson_id_3: document.getElementById('trial_lesson_id_3').value,
+      }),
     });
     const data = await res.json();
     showAlert(data.ok ? 'Пробный урок сохранён.' : 'Ошибка.', data.ok ? 'success' : 'error');

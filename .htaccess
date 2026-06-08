@@ -22,6 +22,10 @@ RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 # ── Block direct access to includes/ and db/ ────────────────
 RewriteRule ^(includes|db)/ - [F,L]
 
+# ── Clean URLs ───────────────────────────────────────────────
+RewriteRule ^trial$ /trial.php [L]
+RewriteRule ^trial-extra$ /trial-extra.php [L]
+
 # ── Suppress PHP errors in production ───────────────────────
 <IfModule mod_php8.c>
     php_flag display_errors Off
