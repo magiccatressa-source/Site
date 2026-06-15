@@ -19,11 +19,11 @@ try {
     $expiresAt = date('Y-m-d', strtotime('+30 days'));
     $stmt = db()->prepare(
         'UPDATE subscriptions
-         SET status = ?, payment_status = ?, payment_method = ?,
-             expires_at = ?, started_at = CURDATE(), payment_date = NOW()
+         SET status = ?, payment_status = ?,
+             expires_at = ?, started_at = CURDATE()
          WHERE user_id = ?'
     );
-    $stmt->execute(['active', 'pending', 'phone', $expiresAt, $user['id']]);
+    $stmt->execute(['active', 'pending', $expiresAt, $user['id']]);
 
     // Уведомляем владельца в Telegram через Bot API (если настроен)
     $botToken = setting('telegram_bot_token');
@@ -53,5 +53,5 @@ try {
 
 } catch (Exception $e) {
     error_log('Phone confirm error: ' . $e->getMessage());
-    json_error('Ошибка. Напишите напрямую в Telegram.', 500);
+    json_err('Ошибка. Напишите напрямую в Telegram.', 500);
 }
