@@ -35,12 +35,12 @@
       <button class="btn btn-outline btn-sm" onclick="copyPayPhone(this)">Скопировать</button>
     </div>
     <p style="font-size:13px;font-weight:500;color:#C0532C;margin-bottom:16px">Получатель: Любовь Николаевна Б. · Т-Банк</p>
-    <a class="btn btn-primary"
-       href="https://t.me/indicatrisa?text=<?= urlencode('Любовь, привет! Подписка оплачена! ' . $user['name'] . '.') ?>"
-       style="text-decoration:none;display:block;text-align:center;padding:12px">
-      Написать Любови после оплаты →
-    </a>
-    <p style="font-size:11px;color:var(--muted);margin-top:6px">Я активирую подписку вручную, обычно в течение нескольких часов</p>
+    <button class="btn btn-primary" id="phoneConfirmBtn"
+            onclick="confirmPhonePayment(this)"
+            style="display:block;width:100%;padding:12px;cursor:pointer">
+      Нажать после оплаты — получить доступ
+    </button>
+    <p style="font-size:11px;color:var(--muted);margin-top:6px">Кнопка активирует подписку сразу. Любовь проверит перевод и при необходимости свяжется с вами.</p>
   </div>
 
   <!-- Payform -->
@@ -81,6 +81,33 @@
     });
   });
 })();
+
+function confirmPhonePayment(btn) {
+  btn.disabled = true;
+  btn.textContent = 'Активируем доступ…';
+
+  fetch('/api/payment/phone-confirm.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.ok) {
+      btn.textContent = '✓ Доступ открыт!';
+      btn.style.background = 'var(--marsala)';
+      setTimeout(function() { window.location.reload(); }, 1200);
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Нажать после оплаты — получить доступ';
+      alert('Что-то пошло не так. Напишите Любови в Telegram.');
+    }
+  })
+  .catch(function() {
+    btn.disabled = false;
+    btn.textContent = 'Нажать после оплаты — получить доступ';
+    alert('Ошибка соединения. Напишите Любови в Telegram.');
+  });
+}
 
 function markPaymentPending() {
   fetch('/api/payment/mark-pending.php', {
