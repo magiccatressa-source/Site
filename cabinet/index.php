@@ -166,7 +166,7 @@ if ($isTrial && $sub && $sub['expires_at']) {
       </span>
       <?php endif; ?>
     </div>
-    <?php $isReturning = has_paid_before($user['id']); $suggestedAmount = $isReturning ? 3000 : 3500; $isActive = true; include __DIR__ . '/partials/payment-block.php'; ?>
+    <?php if (!$isTrial): $isReturning = has_paid_before($user['id']); $suggestedAmount = $isReturning ? 3000 : 3500; $isActive = true; include __DIR__ . '/partials/payment-block.php'; endif; ?>
     <?php if ($hasAccess): ?>
     <div style="margin-top:12px">
       <button class="btn btn-outline btn-sm" onclick="document.getElementById('pauseForm').style.display='block';this.style.display='none'">

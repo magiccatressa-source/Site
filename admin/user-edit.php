@@ -99,11 +99,11 @@ function statusLabel($sub): string {
         <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
           <div class="form-group" style="margin:0">
             <label>Дата начала</label>
-            <input type="date" id="startDate" class="form-control" value="<?= date('Y-m-d') ?>" style="width:auto">
+            <input type="date" id="startDate" class="form-control" value="<?= $sub && $sub['started_at'] ? $sub['started_at'] : date('Y-m-d') ?>" style="width:auto">
           </div>
           <div class="form-group" style="margin:0">
             <label>Дата окончания</label>
-            <input type="date" id="expiresDate" class="form-control" value="<?= date('Y-m-d', strtotime('+30 days')) ?>" style="width:auto">
+            <input type="date" id="expiresDate" class="form-control" value="<?= $sub && $sub['expires_at'] ? $sub['expires_at'] : date('Y-m-d', strtotime('+30 days')) ?>" style="width:auto">
           </div>
           <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
             <input type="checkbox" id="payPending"> Рассрочка (ожидается оплата)
