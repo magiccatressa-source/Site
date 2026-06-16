@@ -3,6 +3,7 @@ require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/csrf.php';
 require_once __DIR__ . '/../../includes/db.php';
 require_once __DIR__ . '/../../includes/response.php';
+require_once __DIR__ . '/../../includes/telegram.php';
 
 header('Content-Type: application/json; charset=utf-8');
 $admin = require_admin();
@@ -56,6 +57,7 @@ if ($method === 'POST') {
     ]);
     $newId = (int)db()->lastInsertId();
     log_admin($admin['id'], 'lesson.create', '', $newId, ['title' => $title, 'topic_id' => $topicId]);
+    notify_new_lesson($newId, $title);
     json_ok(['id' => $newId], 201);
 }
 
