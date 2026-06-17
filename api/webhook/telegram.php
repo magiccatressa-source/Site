@@ -26,9 +26,12 @@ if (!empty($body['callback_query'])) {
             if ($already->fetch()) {
                 answer_callback($cqId, 'Вы уже отмечены на этом эфире ✅');
             } else {
+                $dur = db()->prepare('SELECT duration_min FROM lessons WHERE id = ?');
+                $dur->execute([$lessonId]);
+                $durationMin = (int)($dur->fetchColumn() ?: 0);
                 db()->prepare(
-                    'INSERT IGNORE INTO lesson_progress (user_id, lesson_id, completed) VALUES (?, ?, 1)'
-                )->execute([$user['id'], $lessonId]);
+                    'INSERT IGNORE INTO lesson_progress (user_id, lesson_id, completed, watch_seconds) VALUES (?, ?, 1, ?)'
+                )->execute([$user['id'], $lessonId, $durationMin * 60]);
                 answer_callback($cqId, 'Готово! Эфир добавлен в твой прогресс!');
             }
         } else {
