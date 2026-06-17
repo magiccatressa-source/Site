@@ -18,6 +18,8 @@ CREATE TABLE IF NOT EXISTS users (
     phone                VARCHAR(30) DEFAULT NULL,
     vk_url               VARCHAR(255) DEFAULT NULL,
     tg_url               VARCHAR(255) DEFAULT NULL,
+    telegram_chat_id     BIGINT DEFAULT NULL,
+    telegram_link_token  VARCHAR(64) DEFAULT NULL,
     role                 ENUM('user','admin') NOT NULL DEFAULT 'user',
     email_verified       TINYINT(1) NOT NULL DEFAULT 0,
     email_verify_token   VARCHAR(64) DEFAULT NULL,

@@ -38,6 +38,11 @@ $admin = require_admin();
           <input type="url" class="form-control" name="telegram_chat_link" id="telegram_chat_link" placeholder="https://t.me/...">
         </div>
         <div class="form-group">
+          <label>Username бота (без @)</label>
+          <input type="text" class="form-control" name="telegram_bot_username" id="telegram_bot_username" placeholder="lubov_pay_bot">
+          <p style="font-size:12px;color:var(--muted);margin-top:4px">Используется для генерации ссылки привязки Telegram в профиле пользователя.</p>
+        </div>
+        <div class="form-group">
           <label>Chat ID Telegram-канала/чата для уведомлений об уроках</label>
           <input type="text" class="form-control" name="telegram_lessons_chat_id" id="telegram_lessons_chat_id" placeholder="Например: -1001234567890">
           <p style="font-size:12px;color:var(--muted);margin-top:4px">
@@ -187,7 +192,7 @@ Promise.all([
   fetch('/api/admin/lessons-list.php').then(r => r.json()),
 ]).then(([settings, lessonsData]) => {
   if (settings.ok) {
-    ['zoom_link','telegram_chat_link','telegram_lessons_chat_id','schedule_text','welcome_kinescope_id','kinescope_password','welcome_text'].forEach(k => {
+    ['zoom_link','telegram_chat_link','telegram_lessons_chat_id','telegram_bot_username','schedule_text','welcome_kinescope_id','kinescope_password','welcome_text'].forEach(k => {
       const el = document.getElementById(k);
       if (el) el.value = settings[k] || '';
     });
@@ -228,8 +233,9 @@ document.getElementById('settingsForm').addEventListener('submit', async (e) => 
       headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF },
       body: JSON.stringify({
         zoom_link:          document.getElementById('zoom_link').value.trim(),
-        telegram_chat_link: document.getElementById('telegram_chat_link').value.trim(),
+        telegram_chat_link:       document.getElementById('telegram_chat_link').value.trim(),
         telegram_lessons_chat_id: document.getElementById('telegram_lessons_chat_id').value.trim(),
+        telegram_bot_username:    document.getElementById('telegram_bot_username').value.trim(),
         schedule_text:      document.getElementById('schedule_text').value,
       }),
     });

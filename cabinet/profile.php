@@ -167,6 +167,18 @@ $subStatus = subscription_display_status($sub);
     <p style="font-size:12px; color:var(--muted); margin-top:8px">Кнопка отправляет мне сообщение в ТГ, чтобы я активировала подписку</p>
   </div>
 
+  <!-- Telegram link -->
+  <div class="card" style="margin-bottom:24px">
+    <p class="card-title">Telegram</p>
+    <?php if (!empty($user['telegram_chat_id'])): ?>
+      <p style="font-size:15px">✅ Telegram привязан</p>
+      <p style="font-size:13px; color:var(--muted); margin-top:6px">Когда вы нажмёте «Я был на эфире» — прогресс запишется автоматически.</p>
+    <?php else: ?>
+      <p style="font-size:14px; margin-bottom:12px"><?= htmlspecialchars($user['name'], ENT_QUOTES, 'UTF-8') ?>, привяжи аккаунт ТГ один раз, тогда появится возможность отмечать присутствие на эфире и накапливать прогресс.</p>
+      <a id="tgLinkBtn" href="#" class="btn btn-outline btn-sm" onclick="linkTelegram(event)" style="text-decoration:none">Привязать Telegram</a>
+    <?php endif; ?>
+  </div>
+
   <!-- Delete account -->
   <div class="card" style="border-color:var(--danger-bg)">
     <p class="card-title" style="color:var(--danger)">Удаление аккаунта</p>
@@ -180,6 +192,25 @@ $subStatus = subscription_display_status($sub);
 
 <script>
 const CSRF = <?= json_encode(csrf_token()) ?>;
+
+// Привязка Telegram
+async function linkTelegram(e) {
+  e.preventDefault();
+  const btn = document.getElementById('tgLinkBtn');
+  btn.textContent = 'Открываю…';
+  btn.style.pointerEvents = 'none';
+  try {
+    const res = await fetch('/api/cabinet/telegram-link.php');
+    const data = await res.json();
+    if (data.ok) {
+      window.open(data.url, '_blank');
+      btn.textContent = 'Открыт Telegram — нажмите Старт в боте';
+    }
+  } catch {
+    btn.textContent = 'Привязать Telegram';
+    btn.style.pointerEvents = '';
+  }
+}
 
 // Load stats
 fetch('/api/cabinet/stats.php').then(r => r.json()).then(data => {
