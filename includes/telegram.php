@@ -19,10 +19,24 @@ function notify_new_lesson(int $lessonId, string $title, int $isLive = 0, ?strin
         $text = "Новый урок — <b>«" . $safeTitle . "»</b>\n\n<a href=\"" . $url . "\">→ Смотреть запись</a>";
     }
 
-    @file_get_contents(
-        'https://api.telegram.org/bot' . $botToken
-        . '/sendMessage?chat_id=' . $chatId
-        . '&text=' . urlencode($text)
-        . '&parse_mode=HTML'
-    );
+    $params = [
+        'chat_id'    => $chatId,
+        'text'       => $text,
+        'parse_mode' => 'HTML',
+    ];
+
+    if ($isLive) {
+        $params['reply_markup'] = json_encode([
+            'inline_keyboard' => [[
+                ['text' => '✋ Я был на эфире', 'callback_data' => 'attended:' . $lessonId],
+            ]]
+        ]);
+    }
+
+    $ctx = stream_context_create(['http' => [
+        'method'  => 'POST',
+        'header'  => 'Content-Type: application/json',
+        'content' => json_encode($params),
+    ]]);
+    @file_get_contents('https://api.telegram.org/bot' . $botToken . '/sendMessage', false, $ctx);
 }
