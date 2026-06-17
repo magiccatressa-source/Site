@@ -28,7 +28,7 @@ function notify_new_lesson(int $lessonId, string $title, int $isLive = 0, ?strin
     if ($isLive) {
         $params['reply_markup'] = json_encode([
             'inline_keyboard' => [[
-                ['text' => '✋ Я был на эфире', 'callback_data' => 'attended:' . $lessonId],
+                ['text' => 'Засчитать присутствие', 'callback_data' => 'attended:' . $lessonId],
             ]]
         ]);
     }

@@ -29,7 +29,7 @@ if (!empty($body['callback_query'])) {
                 db()->prepare(
                     'INSERT IGNORE INTO lesson_progress (user_id, lesson_id, completed) VALUES (?, ?, 1)'
                 )->execute([$user['id'], $lessonId]);
-                answer_callback($cqId, 'Готово! Эфир засчитан в ваш прогресс ✅');
+                answer_callback($cqId, 'Готово! Эфир добавлен в твой прогресс!');
             }
         } else {
             answer_callback($cqId, 'Привяжите Telegram в личном кабинете, чтобы отмечать эфиры.');
