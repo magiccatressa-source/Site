@@ -197,14 +197,18 @@ const CSRF = <?= json_encode(csrf_token()) ?>;
 async function linkTelegram(e) {
   e.preventDefault();
   const btn = document.getElementById('tgLinkBtn');
-  btn.textContent = 'Открываю…';
+  btn.textContent = 'Генерирую ссылку…';
   btn.style.pointerEvents = 'none';
   try {
     const res = await fetch('/api/cabinet/telegram-link.php');
     const data = await res.json();
     if (data.ok) {
-      window.open(data.url, '_blank');
-      btn.textContent = 'Открыт Telegram — нажмите Старт в боте';
+      btn.href = data.url;
+      btn.target = '_blank';
+      btn.textContent = 'Открыть Telegram';
+      btn.style.pointerEvents = '';
+      btn.onclick = null;
+      btn.click();
     }
   } catch {
     btn.textContent = 'Привязать Telegram';
