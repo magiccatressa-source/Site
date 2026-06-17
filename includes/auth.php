@@ -50,7 +50,8 @@ function require_login(): array {
             str_starts_with($_SERVER['REQUEST_URI'], '/api/')) {
             json_err('unauthenticated', 401);
         }
-        header('Location: /auth/login.php');
+        $next = urlencode($_SERVER['REQUEST_URI'] ?? '');
+        header('Location: /auth/login.php' . ($next ? '?next=' . $next : ''));
         exit;
     }
     return $user;

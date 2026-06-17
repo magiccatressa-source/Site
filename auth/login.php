@@ -3,8 +3,10 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/csrf.php';
 
 start_user_session();
+$next = $_GET['next'] ?? '';
+if (!preg_match('#^/cabinet/#', $next)) $next = '';
 if (!empty($_SESSION['user_id'])) {
-    header('Location: /cabinet/');
+    header('Location: ' . ($next ?: '/cabinet/'));
     exit;
 }
 
@@ -94,7 +96,7 @@ form.addEventListener('submit', async (e) => {
     });
     const data = await res.json();
     if (data.ok) {
-      window.location.href = '/cabinet/';
+      window.location.href = <?= json_encode($next ?: '/cabinet/') ?>;
     } else {
       showAlert(errors[data.error] || 'Ошибка входа. Попробуйте ещё раз.');
     }
