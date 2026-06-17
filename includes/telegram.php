@@ -14,12 +14,10 @@ function notify_new_lesson(int $lessonId, string $title, int $isLive = 0, ?strin
                        'июля','августа','сентября','октября','ноября','декабря'];
         $dt     = new DateTime($liveDate);
         $dateRu = $dt->format('j') . ' ' . $months[(int)$dt->format('n')];
-        $intro  = "Эфир от " . $dateRu . " — доступен для просмотра";
+        $text = "Загружен эфир от " . $dateRu . " — <b>«" . $safeTitle . "»</b>\n\n<a href=\"" . $url . "\">→ Смотреть запись</a>";
     } else {
-        $intro  = "Новый урок — доступен для просмотра";
+        $text = "Новый урок — <b>«" . $safeTitle . "»</b>\n\n<a href=\"" . $url . "\">→ Смотреть запись</a>";
     }
-
-    $text = $intro . "\n\n<b>«" . $safeTitle . "»</b>\n\n<a href=\"" . $url . "\">→ Смотреть запись</a>";
 
     @file_get_contents(
         'https://api.telegram.org/bot' . $botToken
