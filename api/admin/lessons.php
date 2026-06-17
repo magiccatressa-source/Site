@@ -14,7 +14,7 @@ if ($method === 'GET') {
     $topicId = (int)($_GET['topic_id'] ?? 0);
     if ($topicId) {
         $rows = db()->prepare(
-            'SELECT id, topic_id, title, kinescope_id, description, duration_min, sort_order, is_visible, is_trial
+            'SELECT id, topic_id, title, kinescope_id, description, duration_min, sort_order, is_visible, is_trial, is_live, live_date
              FROM lessons WHERE topic_id = ? ORDER BY sort_order, id'
         );
         $rows->execute([$topicId]);
@@ -46,18 +46,22 @@ if ($method === 'POST') {
     $max->execute([$topicId]);
     $sortOrder = (int)$max->fetchColumn();
 
+    $isLive   = !empty($data['is_live']) ? 1 : 0;
+    $liveDate = $isLive ? ($data['live_date'] ?? date('Y-m-d')) : null;
     db()->prepare(
-        'INSERT INTO lessons (topic_id, title, kinescope_id, description, duration_min, sort_order)
-         VALUES (?, ?, ?, ?, ?, ?)'
+        'INSERT INTO lessons (topic_id, title, kinescope_id, description, duration_min, sort_order, is_live, live_date)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
     )->execute([
         $topicId, $title, $kinescopeId,
         $data['description'] ?? null,
         ($data['duration_min'] ?? null) ? (int)$data['duration_min'] : null,
         $sortOrder,
+        $isLive,
+        $liveDate,
     ]);
     $newId = (int)db()->lastInsertId();
     log_admin($admin['id'], 'lesson.create', '', $newId, ['title' => $title, 'topic_id' => $topicId]);
-    notify_new_lesson($newId, $title);
+    notify_new_lesson($newId, $title, $isLive, $liveDate);
     json_ok(['id' => $newId], 201);
 }
 
@@ -67,10 +71,10 @@ if ($method === 'PUT') {
 
     $fields = [];
     $params = [];
-    foreach (['topic_id','title','kinescope_id','description'] as $f) {
+    foreach (['topic_id','title','kinescope_id','description','live_date'] as $f) {
         if (array_key_exists($f, $data)) { $fields[] = "$f = ?"; $params[] = $data[$f]; }
     }
-    foreach (['duration_min','sort_order','is_visible','is_trial'] as $f) {
+    foreach (['duration_min','sort_order','is_visible','is_trial','is_live'] as $f) {
         if (array_key_exists($f, $data)) {
             $fields[] = "$f = ?";
             $params[] = ($data[$f] !== null && $data[$f] !== '') ? (int)$data[$f] : null;

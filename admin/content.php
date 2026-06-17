@@ -118,6 +118,14 @@ $topics = db()->query(
       <input type="checkbox" id="lessonIsTrial" style="width:16px;height:16px;cursor:pointer">
       <label for="lessonIsTrial" style="margin:0;cursor:pointer;font-size:14px">Пробный урок (виден при пробном доступе)</label>
     </div>
+    <div class="form-group" style="display:flex;align-items:center;gap:8px">
+      <input type="checkbox" id="lessonIsLive" style="width:16px;height:16px;cursor:pointer" onchange="toggleLiveDate()">
+      <label for="lessonIsLive" style="margin:0;cursor:pointer;font-size:14px">Эфир</label>
+    </div>
+    <div class="form-group" id="liveDateGroup" style="display:none">
+      <label>Дата эфира</label>
+      <input type="date" id="lessonLiveDate" class="form-control" style="width:180px">
+    </div>
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">
       <button class="btn btn-ghost" onclick="closeLessonModal()">Отмена</button>
       <button class="btn btn-primary" id="saveLessonBtn" onclick="saveLesson()">Сохранить</button>
@@ -184,6 +192,14 @@ async function loadLessons(topicId) {
   container.innerHTML = html;
 }
 
+function toggleLiveDate() {
+  const isLive = document.getElementById('lessonIsLive').checked;
+  document.getElementById('liveDateGroup').style.display = isLive ? 'block' : 'none';
+  if (isLive && !document.getElementById('lessonLiveDate').value) {
+    document.getElementById('lessonLiveDate').value = new Date().toISOString().slice(0, 10);
+  }
+}
+
 function openNewLesson(topicId) {
   document.getElementById('lessonModalTitle').textContent = 'Новый урок';
   document.getElementById('lessonId').value = '';
@@ -193,6 +209,9 @@ function openNewLesson(topicId) {
   document.getElementById('lessonDuration').value = '';
   document.getElementById('lessonDescription').value = '';
   document.getElementById('lessonIsTrial').checked = false;
+  document.getElementById('lessonIsLive').checked = false;
+  document.getElementById('lessonLiveDate').value = '';
+  document.getElementById('liveDateGroup').style.display = 'none';
   document.getElementById('lessonModal').style.display = 'flex';
 }
 
@@ -209,6 +228,9 @@ async function openEditLesson(lessonId, topicId) {
   document.getElementById('lessonDuration').value = lesson.duration_min || '';
   document.getElementById('lessonDescription').value = lesson.description || '';
   document.getElementById('lessonIsTrial').checked = !!lesson.is_trial;
+  document.getElementById('lessonIsLive').checked  = !!lesson.is_live;
+  document.getElementById('lessonLiveDate').value  = lesson.live_date || '';
+  document.getElementById('liveDateGroup').style.display = lesson.is_live ? 'block' : 'none';
   document.getElementById('lessonModal').style.display = 'flex';
 }
 
@@ -227,6 +249,8 @@ async function saveLesson() {
     duration_min: document.getElementById('lessonDuration').value || null,
     description:  document.getElementById('lessonDescription').value,
     is_trial:     document.getElementById('lessonIsTrial').checked ? 1 : 0,
+    is_live:      document.getElementById('lessonIsLive').checked ? 1 : 0,
+    live_date:    document.getElementById('lessonIsLive').checked ? document.getElementById('lessonLiveDate').value : null,
   };
   if (id) payload.id = id;
 
