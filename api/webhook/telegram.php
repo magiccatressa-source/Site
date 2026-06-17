@@ -32,7 +32,7 @@ if (!empty($body['callback_query'])) {
                 answer_callback($cqId, 'Готово! Эфир добавлен в твой прогресс!');
             }
         } else {
-            answer_callback($cqId, 'Привяжите Telegram в личном кабинете, чтобы отмечать эфиры.');
+            answer_callback($cqId, 'Чтобы отмечать эфиры, нужно один раз привязать Telegram. Зайди в личный кабинет на сайте → Профиль → кнопка «Привязать Telegram».');
         }
     }
 
