@@ -8,15 +8,15 @@ $body = json_decode(file_get_contents('php://input'), true);
 // Обработка нажатия inline-кнопки
 if (!empty($body['callback_query'])) {
     $cq     = $body['callback_query'];
-    $chatId = $cq['message']['chat']['id'] ?? null;
+    $fromId = $cq['from']['id'] ?? null;
     $data   = $cq['data'] ?? '';
     $cqId   = $cq['id'];
 
-    if ($chatId && str_starts_with($data, 'attended:')) {
+    if ($fromId && str_starts_with($data, 'attended:')) {
         $lessonId = (int)substr($data, 9);
 
         $stmt = db()->prepare('SELECT id FROM users WHERE telegram_chat_id = ?');
-        $stmt->execute([$chatId]);
+        $stmt->execute([$fromId]);
         $user = $stmt->fetch();
 
         if ($user) {
