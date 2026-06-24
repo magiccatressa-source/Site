@@ -99,11 +99,17 @@ function has_paid_before(int $userId): bool {
 
 function has_active_access(?array $sub): bool {
     if (!$sub) return false;
-    return in_array($sub['status'], ['active', 'trial'], true);
+    if (!in_array($sub['status'], ['active', 'trial'], true)) return false;
+    if ($sub['expires_at'] && $sub['expires_at'] < date('Y-m-d')) return false;
+    return true;
 }
 
 function subscription_display_status(?array $sub): string {
     if (!$sub || $sub['status'] === 'inactive' || $sub['status'] === 'expired') {
+        return 'inactive';
+    }
+    // Treat expired subscriptions as inactive
+    if ($sub['expires_at'] && $sub['expires_at'] < date('Y-m-d') && !$sub['is_paused']) {
         return 'inactive';
     }
     if ($sub['status'] === 'trial') {

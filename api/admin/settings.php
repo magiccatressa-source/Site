@@ -8,7 +8,7 @@ header('Content-Type: application/json; charset=utf-8');
 $admin = require_admin();
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $keys = ['zoom_link','telegram_chat_link','telegram_lessons_chat_id','telegram_bot_username','schedule_text','welcome_kinescope_id','welcome_text','kinescope_password','trial_lesson_id','trial_lesson_id_2','trial_lesson_id_3'];
+    $keys = ['zoom_link','telegram_chat_link','telegram_admin_chat_id','telegram_lessons_chat_id','telegram_bot_username','schedule_text','welcome_kinescope_id','welcome_text','kinescope_password','trial_lesson_id','trial_lesson_id_2','trial_lesson_id_3'];
     $result = [];
     foreach ($keys as $k) $result[$k] = setting($k);
     json_ok($result);
@@ -18,7 +18,7 @@ only_post();
 csrf_verify();
 $data = body();
 
-$allowed = ['zoom_link','telegram_chat_link','telegram_lessons_chat_id','telegram_bot_username','schedule_text','welcome_kinescope_id','welcome_text','kinescope_password','trial_lesson_id','trial_lesson_id_2','trial_lesson_id_3'];
+$allowed = ['zoom_link','telegram_chat_link','telegram_admin_chat_id','telegram_lessons_chat_id','telegram_bot_username','schedule_text','welcome_kinescope_id','welcome_text','kinescope_password','trial_lesson_id','trial_lesson_id_2','trial_lesson_id_3'];
 $saved = [];
 foreach ($allowed as $key) {
     if (array_key_exists($key, $data)) {

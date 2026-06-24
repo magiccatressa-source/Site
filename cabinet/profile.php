@@ -161,10 +161,10 @@ $subStatus = subscription_display_status($sub);
     </div>
     <p style="font-size:13px; font-weight:500; color:#C0532C; margin-bottom:24px">Получатель: Любовь Николаевна Б. · Т-Банк</p>
 
-    <a id="tgPaidBtn" href="#" class="btn btn-primary btn-sm" style="text-decoration:none">
+    <button id="tgPaidBtn" class="btn btn-primary btn-sm" onclick="confirmPayment()">
       Нажми после оплаты
-    </a>
-    <p style="font-size:12px; color:var(--muted); margin-top:8px">Кнопка отправляет мне сообщение в ТГ, чтобы я активировала подписку</p>
+    </button>
+    <p style="font-size:12px; color:var(--muted); margin-top:8px">Подписка активируется на 30 дней автоматически</p>
   </div>
 
   <!-- Telegram link -->
@@ -311,11 +311,32 @@ function copyPhone(btn) {
   });
 }
 
-// Кнопка "Я оплатила" → открывает Telegram с готовым сообщением
-(function() {
-  const msg = encodeURIComponent('Любовь, привет! Подписка оплачена! ' + userName + '.');
-  document.getElementById('tgPaidBtn').href = 'https://t.me/indicatrisa?text=' + msg;
-})();
+// Кнопка "Я оплатил" → активирует подписку на 30 дней + открывает TG
+async function confirmPayment() {
+  const btn = document.getElementById('tgPaidBtn');
+  btn.disabled = true;
+  btn.textContent = 'Активируем…';
+  try {
+    const res = await fetch('/api/cabinet/payment-confirm.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF },
+    });
+    const data = await res.json();
+    if (data.ok) {
+      btn.textContent = 'Готово! ✓';
+      const msg = encodeURIComponent('Любовь, привет! Подписка оплачена! ' + userName + '.');
+      setTimeout(() => { window.open('https://t.me/indicatrisa?text=' + msg, '_blank'); location.reload(); }, 800);
+    } else {
+      btn.textContent = 'Нажми после оплаты';
+      btn.disabled = false;
+      alert(data.error === 'already_active' ? 'У вас уже есть активная подписка.' : 'Ошибка. Напишите мне в Telegram.');
+    }
+  } catch {
+    btn.textContent = 'Нажми после оплаты';
+    btn.disabled = false;
+    alert('Ошибка соединения. Напишите мне в Telegram.');
+  }
+}
 
 async function confirmDelete() {
   if (!confirm('Удалить аккаунт навсегда? Это действие необратимо.')) return;

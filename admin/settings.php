@@ -43,6 +43,11 @@ $admin = require_admin();
           <p style="font-size:12px;color:var(--muted);margin-top:4px">Используется для генерации ссылки привязки Telegram в профиле пользователя.</p>
         </div>
         <div class="form-group">
+          <label>Chat ID вашего личного Telegram (для уведомлений об оплатах)</label>
+          <input type="text" class="form-control" name="telegram_admin_chat_id" id="telegram_admin_chat_id" placeholder="Например: 123456789">
+          <p style="font-size:12px;color:var(--muted);margin-top:4px">Когда клиент нажимает «Нажми после оплаты», вам придёт уведомление. Узнать свой chat_id: напишите боту /start, откройте <code>https://api.telegram.org/bot&lt;ТОКЕН&gt;/getUpdates</code> и найдите <code>"from":{"id": ...}</code>.</p>
+        </div>
+        <div class="form-group">
           <label>Chat ID Telegram-канала/чата для уведомлений об уроках</label>
           <input type="text" class="form-control" name="telegram_lessons_chat_id" id="telegram_lessons_chat_id" placeholder="Например: -1001234567890">
           <p style="font-size:12px;color:var(--muted);margin-top:4px">
@@ -192,7 +197,7 @@ Promise.all([
   fetch('/api/admin/lessons-list.php').then(r => r.json()),
 ]).then(([settings, lessonsData]) => {
   if (settings.ok) {
-    ['zoom_link','telegram_chat_link','telegram_lessons_chat_id','telegram_bot_username','schedule_text','welcome_kinescope_id','kinescope_password','welcome_text'].forEach(k => {
+    ['zoom_link','telegram_chat_link','telegram_admin_chat_id','telegram_lessons_chat_id','telegram_bot_username','schedule_text','welcome_kinescope_id','kinescope_password','welcome_text'].forEach(k => {
       const el = document.getElementById(k);
       if (el) el.value = settings[k] || '';
     });
@@ -232,8 +237,9 @@ document.getElementById('settingsForm').addEventListener('submit', async (e) => 
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF },
       body: JSON.stringify({
-        zoom_link:          document.getElementById('zoom_link').value.trim(),
+        zoom_link:                document.getElementById('zoom_link').value.trim(),
         telegram_chat_link:       document.getElementById('telegram_chat_link').value.trim(),
+        telegram_admin_chat_id:   document.getElementById('telegram_admin_chat_id').value.trim(),
         telegram_lessons_chat_id: document.getElementById('telegram_lessons_chat_id').value.trim(),
         telegram_bot_username:    document.getElementById('telegram_bot_username').value.trim(),
         schedule_text:      document.getElementById('schedule_text').value,

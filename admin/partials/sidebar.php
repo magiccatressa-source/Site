@@ -6,7 +6,15 @@ function nav_a(string $href, string $label, string $cur): string {
     return '<a href="' . $href . '"' . $cls . '>' . $label . '</a>';
 }
 ?>
-<aside class="admin-sidebar">
+<!-- Mobile top bar -->
+<div class="admin-mobile-bar">
+  <a href="/admin/" class="admin-mobile-logo">Йога с Любовью</a>
+  <button class="admin-burger" id="adminBurger" aria-label="Меню">&#9776;</button>
+</div>
+<!-- Overlay -->
+<div class="admin-sidebar-overlay" id="adminOverlay"></div>
+
+<aside class="admin-sidebar" id="adminSidebar">
   <a href="/admin/" class="sidebar-logo">Йога с Любовью</a>
   <nav class="sidebar-nav">
     <span class="nav-section">Обзор</span>
@@ -30,4 +38,14 @@ document.getElementById('adminLogout')?.addEventListener('click', async (e) => {
   await fetch('/api/admin/logout.php', { method: 'POST' });
   window.location.href = '/admin/login.php';
 });
+
+(function() {
+  const burger  = document.getElementById('adminBurger');
+  const sidebar = document.getElementById('adminSidebar');
+  const overlay = document.getElementById('adminOverlay');
+  function open()  { sidebar.classList.add('open'); overlay.classList.add('open'); }
+  function close() { sidebar.classList.remove('open'); overlay.classList.remove('open'); }
+  burger?.addEventListener('click', open);
+  overlay?.addEventListener('click', close);
+})();
 </script>

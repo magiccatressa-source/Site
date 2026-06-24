@@ -64,6 +64,8 @@ $topics = db()->query(
           <?php if (!$t['is_visible']): ?><span class="badge badge-inactive">скрыта</span><?php endif; ?>
           <?php if ($t['is_current']): ?><span class="badge badge-active" style="font-size:10px">▶ сейчас изучается</span><?php endif; ?>
           <div style="display:flex;gap:6px" onclick="event.stopPropagation()">
+            <button class="btn btn-ghost btn-sm" style="padding:2px 6px" onclick="moveTopicUp(<?= (int)$t['id'] ?>)" title="Выше">↑</button>
+            <button class="btn btn-ghost btn-sm" style="padding:2px 6px" onclick="moveTopicDown(<?= (int)$t['id'] ?>)" title="Ниже">↓</button>
             <button class="btn btn-ghost btn-sm" onclick="editTopic(<?= (int)$t['id'] ?>, '<?= htmlspecialchars(addslashes($t['title']), ENT_QUOTES, 'UTF-8') ?>')">Переименовать</button>
             <button class="btn btn-ghost btn-sm" onclick="toggleTopicCurrent(<?= (int)$t['id'] ?>, <?= $t['is_current'] ? 0 : 1 ?>)"><?= $t['is_current'] ? 'Снять метку' : '▶ Текущая' ?></button>
             <button class="btn btn-ghost btn-sm" onclick="toggleTopicVisible(<?= (int)$t['id'] ?>, <?= $t['is_visible'] ? 0 : 1 ?>)"><?= $t['is_visible'] ? 'Скрыть' : 'Показать' ?></button>
@@ -322,6 +324,28 @@ async function fetchDuration(videoId) {
       document.getElementById('durationHint').style.display = 'inline';
     }
   } catch {}
+}
+
+async function moveTopicUp(id) {
+  const blocks = Array.from(document.querySelectorAll('#topicsList .topic-block'));
+  const idx = blocks.findIndex(b => parseInt(b.dataset.id) === id);
+  if (idx <= 0) return;
+  const prevId = parseInt(blocks[idx - 1].dataset.id);
+  const r1 = await apiPost('/api/admin/topics.php', 'PUT', { id, sort_order: (idx - 1) * 10 });
+  const r2 = await apiPost('/api/admin/topics.php', 'PUT', { id: prevId, sort_order: idx * 10 });
+  if (r1.ok && r2.ok) location.reload();
+  else showAlert('Ошибка перемещения.', 'error');
+}
+
+async function moveTopicDown(id) {
+  const blocks = Array.from(document.querySelectorAll('#topicsList .topic-block'));
+  const idx = blocks.findIndex(b => parseInt(b.dataset.id) === id);
+  if (idx < 0 || idx >= blocks.length - 1) return;
+  const nextId = parseInt(blocks[idx + 1].dataset.id);
+  const r1 = await apiPost('/api/admin/topics.php', 'PUT', { id, sort_order: (idx + 1) * 10 });
+  const r2 = await apiPost('/api/admin/topics.php', 'PUT', { id: nextId, sort_order: idx * 10 });
+  if (r1.ok && r2.ok) location.reload();
+  else showAlert('Ошибка перемещения.', 'error');
 }
 
 async function toggleTopicCurrent(id, isCurrent) {
