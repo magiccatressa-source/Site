@@ -13,7 +13,7 @@ define('SBP_PHONE_DISPLAY', '+7 912 588-08-26');
 $statusLabels = [
     'active'          => 'Активна',
     'paused'          => 'Активна (на паузе)',
-    'pending_payment' => 'Активна, ожидается оплата',
+    'pending_payment' => 'Активна, ожидает подтверждения',
     'trial'           => 'Пробный доступ',
     'inactive'        => 'Не активна',
 ];

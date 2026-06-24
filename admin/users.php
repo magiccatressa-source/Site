@@ -58,7 +58,7 @@ function sub_badge(?string $status, bool $paused, ?string $payment): array {
     if (!$status || $status === 'inactive' || $status === 'expired') return ['Не активна', 'badge-inactive'];
     if ($status === 'trial')  return ['Пробный', 'badge-trial'];
     if ($paused)              return ['На паузе', 'badge-paused'];
-    if ($payment === 'pending') return ['Ожидает оплаты', 'badge-pending'];
+    if ($payment === 'pending') return ['Ожидает подтверждения', 'badge-pending'];
     return ['Активна', 'badge-active'];
 }
 ?>
