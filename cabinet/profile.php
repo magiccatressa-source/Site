@@ -164,7 +164,7 @@ $subStatus = subscription_display_status($sub);
     <button id="tgPaidBtn" class="btn btn-primary btn-sm" onclick="confirmPayment()">
       Нажми после оплаты
     </button>
-    <p style="font-size:12px; color:var(--muted); margin-top:8px">Подписка активируется на 30 дней автоматически</p>
+    <p style="font-size:12px; color:var(--muted); margin-top:8px">Кнопка активирует подписку сразу</p>
   </div>
 
   <!-- Telegram link -->
