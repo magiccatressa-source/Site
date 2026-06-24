@@ -26,13 +26,13 @@ $expiresDate = date('Y-m-d', strtotime('+30 days'));
 
 if ($sub) {
     db()->prepare(
-        'UPDATE subscriptions SET status = "active", is_paused = 0, payment_status = "pending",
+        'UPDATE subscriptions SET status = "active", is_paused = 0, payment_status = "paid",
          started_at = ?, expires_at = ?, pause_started_at = NULL, pause_notes = NULL WHERE id = ?'
     )->execute([$startDate, $expiresDate, $sub['id']]);
 } else {
     db()->prepare(
         'INSERT INTO subscriptions (user_id, status, is_paused, payment_status, started_at, expires_at)
-         VALUES (?, "active", 0, "pending", ?, ?)'
+         VALUES (?, "active", 0, "paid", ?, ?)'
     )->execute([$userId, $startDate, $expiresDate]);
 }
 
