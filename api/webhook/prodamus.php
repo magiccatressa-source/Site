@@ -4,10 +4,13 @@
  *
  * Prodamus отправляет POST с полями (не JSON):
  *   customer_email, customer_phone, sum, order_id, date, payment_type
- * Событие "Заказ оплачен" не содержит поля status — сам факт вызова = успешная оплата.
+ * Подпись передаётся в заголовке Sign — см. includes/prodamus-hmac.php.
+ * Событие "Заказ оплачен" не содержит поля status — сам факт вызова = успешная оплата,
+ * поэтому подлинность запроса подтверждается только подписью и суммой.
  */
 
 require_once __DIR__ . '/../../includes/db.php';
+require_once __DIR__ . '/../../includes/prodamus-hmac.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -26,12 +29,57 @@ if (empty($data)) {
     exit;
 }
 
+function notify_admin_telegram(string $text): void {
+    $botToken = setting('telegram_bot_token');
+    $adminId  = setting('telegram_admin_chat_id');
+    if (!$botToken || !$adminId) return;
+    @file_get_contents(
+        'https://api.telegram.org/bot' . $botToken . '/sendMessage?chat_id=' . $adminId
+        . '&text=' . urlencode($text)
+    );
+}
+
+function prodamus_reject(string $reason, array $data): never {
+    error_log('Prodamus webhook REJECTED (' . $reason . '): ' . json_encode($data, JSON_UNESCAPED_UNICODE));
+    notify_admin_telegram(
+        "⚠️ Отклонён подозрительный вебхук от Prodamus\n" .
+        "Причина: " . $reason . "\n" .
+        "Если это была настоящая оплата клиента — активируйте подписку вручную в админке " .
+        "и напишите разработчику, что-то не так с проверкой подписи.\n" .
+        "Данные: " . json_encode($data, JSON_UNESCAPED_UNICODE)
+    );
+    // Отвечаем 200, чтобы Prodamus не повторял запрос бесконечно
+    http_response_code(200);
+    echo json_encode(['status' => 'rejected', 'reason' => $reason]);
+    exit;
+}
+
+// ── Проверка подписи ────────────────────────────────────────────
+$secretKey = setting('prodamus_secret_key');
+if ($secretKey) {
+    $headers = function_exists('getallheaders') ? getallheaders() : [];
+    $signature = $headers['Sign'] ?? $headers['sign'] ?? ($_SERVER['HTTP_SIGN'] ?? null);
+    if (!ProdamusHmac::verify($data, $secretKey, $signature)) {
+        prodamus_reject('invalid_signature', $data);
+    }
+} else {
+    // Секретный ключ не заполнен в Настройках админки — подпись проверить нечем.
+    error_log('Prodamus webhook: prodamus_secret_key не задан в настройках, подпись НЕ проверяется!');
+}
+
+// ── Проверка суммы (защита от "оплаты" по подменённой ссылке) ──
+// Актуальные цены клуба: 3500₽ (первый месяц) / 3000₽ (продление) — см. cabinet/partials/payment-block.php
+$MIN_VALID_AMOUNT = 2000.0;
+$amount = (float)str_replace(',', '.', $data['sum'] ?? $data['amount'] ?? 0);
+if ($amount < $MIN_VALID_AMOUNT) {
+    prodamus_reject('amount_too_low_' . $amount, $data);
+}
+
 try {
     // Prodamus присылает email покупателя в customer_email
     $email       = trim($data['customer_email'] ?? $data['email'] ?? '');
     $phone       = trim($data['customer_phone'] ?? $data['phone'] ?? '');
     $orderId     = $data['order_id'] ?? null;
-    $amount      = (float)str_replace(',', '.', $data['sum'] ?? $data['amount'] ?? 0);
 
     $userId = null;
 
@@ -64,7 +112,7 @@ try {
         exit;
     }
 
-    // Факт получения вебхука "Заказ оплачен" = успешная оплата
+    // Факт получения вебхука "Заказ оплачен" с валидной подписью и суммой = успешная оплата
     $expiresAt = date('Y-m-d', strtotime('+30 days'));
 
     $stmt = db()->prepare(

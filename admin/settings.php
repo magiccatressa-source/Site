@@ -65,6 +65,23 @@ $admin = require_admin();
       </form>
     </div>
 
+    <!-- Prodamus security -->
+    <div class="acard" style="border-color:var(--marsala)">
+      <div class="acard-title">Безопасность оплаты Prodamus</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">
+        Секретный ключ нужен, чтобы сайт мог отличить настоящее уведомление об оплате от Prodamus от поддельного.
+        Найти его: личный кабинет Prodamus → Настройки → API → Secret Key. Без этого поля проверка подписи вебхука не работает.
+      </p>
+      <form id="prodamusForm">
+        <?= csrf_field() ?>
+        <div class="form-group">
+          <label>Secret Key</label>
+          <input type="password" class="form-control" name="prodamus_secret_key" id="prodamus_secret_key" placeholder="Секретный ключ из личного кабинета Prodamus" autocomplete="off">
+        </div>
+        <button type="submit" class="btn btn-primary" id="saveProdamusBtn">Сохранить</button>
+      </form>
+    </div>
+
     <!-- Welcome video -->
     <div class="acard">
       <div class="acard-title">Приветственное видео</div>
@@ -197,7 +214,7 @@ Promise.all([
   fetch('/api/admin/lessons-list.php').then(r => r.json()),
 ]).then(([settings, lessonsData]) => {
   if (settings.ok) {
-    ['zoom_link','telegram_chat_link','telegram_admin_chat_id','telegram_lessons_chat_id','telegram_bot_username','schedule_text','welcome_kinescope_id','kinescope_password','welcome_text'].forEach(k => {
+    ['zoom_link','telegram_chat_link','telegram_admin_chat_id','telegram_lessons_chat_id','telegram_bot_username','schedule_text','welcome_kinescope_id','kinescope_password','welcome_text','prodamus_secret_key'].forEach(k => {
       const el = document.getElementById(k);
       if (el) el.value = settings[k] || '';
     });
@@ -247,6 +264,25 @@ document.getElementById('settingsForm').addEventListener('submit', async (e) => 
     });
     const data = await res.json();
     showAlert(data.ok ? 'Настройки сохранены.' : 'Ошибка.', data.ok ? 'success' : 'error');
+  } catch { showAlert('Ошибка соединения.','error'); }
+  finally { btn.disabled = false; }
+});
+
+// Save Prodamus secret key
+document.getElementById('prodamusForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('saveProdamusBtn');
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/admin/settings.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF },
+      body: JSON.stringify({
+        prodamus_secret_key: document.getElementById('prodamus_secret_key').value.trim(),
+      }),
+    });
+    const data = await res.json();
+    showAlert(data.ok ? 'Ключ сохранён.' : 'Ошибка.', data.ok ? 'success' : 'error');
   } catch { showAlert('Ошибка соединения.','error'); }
   finally { btn.disabled = false; }
 });
