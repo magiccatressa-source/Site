@@ -74,7 +74,7 @@ try {
              expires_at = ?, started_at = CURDATE()
          WHERE user_id = ?'
     );
-    $stmt->execute(['active', 'paid', 'payform', $orderId, $expiresAt, $userId]);
+    $stmt->execute(['active', 'paid', 'prodamus', $orderId, $expiresAt, $userId]);
 
     error_log('Prodamus webhook: subscription activated for user ' . $userId . ' (email=' . $email . ', sum=' . $amount . ')');
 

@@ -173,7 +173,7 @@ if (!$lesson2 && !$lesson3) {
     <div class="trial-cta__actions">
       <a href="https://t.me/indicatrisa" target="_blank" rel="noopener" class="ll-btn ll-btn-secondary">Подписаться в TG →</a>
       <a href="https://vk.com/lubov.yoga" target="_blank" rel="noopener" class="ll-btn ll-btn-secondary">Подписаться в VK →</a>
-      <a href="/#join" class="ll-btn ll-btn-primary">Вступить в клуб →</a>
+      <a href="/#pricing" class="ll-btn ll-btn-primary">Вступить в клуб →</a>
     </div>
   </div>
 

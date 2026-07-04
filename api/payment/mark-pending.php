@@ -12,7 +12,11 @@ only_post();
 $user = require_login();
 
 $data = json_decode(file_get_contents('php://input'), true);
-$method = $data['payment_method'] ?? 'payform';
+$method = $data['payment_method'] ?? 'prodamus';
+// Только значения, допустимые ENUM payment_method в БД
+if (!in_array($method, ['phone', 'prodamus', 'manual'], true)) {
+    $method = 'prodamus';
+}
 
 try {
     $stmt = db()->prepare(
@@ -25,5 +29,5 @@ try {
     json_ok(['status' => 'marked_pending']);
 
 } catch (Exception $e) {
-    json_error('Error: ' . $e->getMessage(), 500);
+    json_err('server_error', 500);
 }

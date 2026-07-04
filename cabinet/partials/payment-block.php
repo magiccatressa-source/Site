@@ -113,7 +113,7 @@ function markPaymentPending() {
   fetch('/api/payment/mark-pending.php', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ payment_method: 'payform' })
+    body: JSON.stringify({ payment_method: 'prodamus' })
   }).catch(function(err) { console.error(err); });
 }
 </script>
