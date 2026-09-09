@@ -27,4 +27,4 @@ Allow: /
 User-agent: cohere-ai
 Allow: /
 
-Sitemap: https://lubov-yoga.ru/sitemap.xml
+Sitemap: https://luchistaya-yoga.ru/sitemap.xml

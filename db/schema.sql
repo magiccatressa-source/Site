@@ -174,3 +174,25 @@ CREATE TABLE IF NOT EXISTS admin_log (
     INDEX idx_created_at (created_at),
     INDEX idx_target (target_type, target_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
+-- FREE LANDING PAGES  (/free/<slug>)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS free_pages (
+    id               INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    slug             VARCHAR(80)  NOT NULL,
+    eyebrow          VARCHAR(120) NOT NULL DEFAULT 'Бесплатный урок',
+    heading          VARCHAR(255) NOT NULL,
+    subline          VARCHAR(255) DEFAULT NULL,
+    intro_text       TEXT         DEFAULT NULL,
+    disclaimer       VARCHAR(255) DEFAULT NULL,
+    kinescope_id     VARCHAR(100) NOT NULL DEFAULT '',
+    is_vertical      TINYINT(1)   NOT NULL DEFAULT 0,
+    meta_description VARCHAR(300) DEFAULT NULL,
+    is_visible       TINYINT(1)   NOT NULL DEFAULT 1,
+    sort_order       INT UNSIGNED NOT NULL DEFAULT 0,
+    created_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_slug (slug),
+    INDEX idx_sort_order (sort_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

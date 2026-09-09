@@ -26,6 +26,11 @@ RewriteRule ^(includes|db)/ - [F,L]
 RewriteRule ^trial$ /trial.php [L]
 RewriteRule ^trial-extra$ /trial-extra.php [L]
 
+# Бесплатные страницы /free/<slug> — одно правило на все такие страницы.
+# Сначала убираем хвостовой слеш, потом отдаём шаблон.
+RewriteRule ^free/([a-z0-9-]+)/$ /free/$1 [L,R=301]
+RewriteRule ^free/([a-z0-9-]+)$ /free/index.php?slug=$1 [L,QSA]
+
 # ── Suppress PHP errors in production ───────────────────────
 <IfModule mod_php8.c>
     php_flag display_errors Off
