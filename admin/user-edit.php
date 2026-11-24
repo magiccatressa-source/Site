@@ -12,12 +12,21 @@ $u->execute([$userId]);
 $user = $u->fetch();
 if (!$user) { header('Location: /admin/users.php'); exit; }
 
-// Доступ к клубу. Управление доступами к остальным продуктам
-// появится в разделе «Продукты» админки.
 $clubId    = club_product_id();
 $access    = get_access_row($userId, $clubId);
 $payStatus = product_payment_status($userId, $clubId);
 $statusKey = access_display_status($userId, $clubId);
+
+// Остальные продукты — курсы и мини-продукты. Скрытые с витрины тоже
+// показываем: доступ к ним выдавать можно, продажи просто закрыты.
+$otherProducts = [];
+if (access_model_ready()) {
+    foreach (all_products(false) as $p) {
+        if ((int)$p['id'] === $clubId) continue;
+        $p['access'] = get_access_row($userId, (int)$p['id']);
+        $otherProducts[] = $p;
+    }
+}
 
 $logRows = db()->prepare(
     'SELECT al.created_at, al.action, al.details, u.name AS admin_name
@@ -178,6 +187,63 @@ $statusLabels = [
       </div>
     </div>
 
+    <!-- Доступы к другим продуктам -->
+    <?php if ($otherProducts): ?>
+    <div class="acard">
+      <div class="acard-title">Другие продукты</div>
+      <?php foreach ($otherProducts as $p):
+        $pa      = $p['access'];
+        $pid     = (int)$p['id'];
+        $isSub   = $p['type'] === 'subscription';
+        $hasNow  = $pa && $pa['status'] === 'active'
+                   && ($pa['expires_at'] === null || strtotime($pa['expires_at']) > time());
+        $defDate = $isSub
+            ? date('Y-m-d', strtotime('+' . max(1, (int)($p['duration_days'] ?: 30)) . ' days'))
+            : '';
+      ?>
+      <div style="padding:14px 0;border-bottom:1px solid var(--cream-deep)">
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+          <div style="flex:1;min-width:200px">
+            <span style="font-weight:500"><?= htmlspecialchars($p['title'], ENT_QUOTES, 'UTF-8') ?></span>
+            <span style="font-size:12px;color:var(--muted)">
+              · <?= $isSub ? 'подписка' : 'разовая покупка' ?>
+              <?php if (!$p['is_active']): ?> · скрыт с витрины<?php endif; ?>
+            </span>
+          </div>
+          <?php if ($hasNow): ?>
+          <span class="badge badge-active" style="font-size:11px">
+            есть доступ<?= $pa['expires_at'] ? ' до ' . date('d.m.Y', strtotime($pa['expires_at'])) : ' бессрочно' ?>
+          </span>
+          <?php else: ?>
+          <span class="badge badge-inactive" style="font-size:11px">нет доступа</span>
+          <?php endif; ?>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+          <div class="form-group" style="margin:0">
+            <label style="font-size:12px">До даты<?= $isSub ? '' : ' (пусто = навсегда)' ?></label>
+            <input type="date" class="form-control" id="pexp<?= $pid ?>"
+                   value="<?= $pa && $pa['expires_at'] ? date('Y-m-d', strtotime($pa['expires_at'])) : $defDate ?>"
+                   style="width:auto">
+          </div>
+          <button class="btn btn-success btn-sm" onclick="productAction(<?= $pid ?>, 'activate')">
+            <?= $hasNow ? 'Обновить доступ' : 'Выдать доступ' ?>
+          </button>
+          <?php if ($hasNow): ?>
+          <button class="btn btn-danger btn-sm"
+                  onclick="if(confirm('Забрать доступ к продукту «<?= htmlspecialchars($p['title'], ENT_QUOTES, 'UTF-8') ?>»?')) productAction(<?= $pid ?>, 'deactivate')">
+            Забрать
+          </button>
+          <?php endif; ?>
+        </div>
+      </div>
+      <?php endforeach; ?>
+      <p style="font-size:12px;color:var(--muted);margin-top:12px">
+        Продукты создаются в разделе <a href="/admin/products.php">«Продукты»</a>.
+        Разовый курс обычно выдают без даты окончания — тогда он остаётся у человека навсегда.
+      </p>
+    </div>
+    <?php endif; ?>
+
     <!-- Audit log for this user -->
     <?php if ($logs): ?>
     <div class="acard">
@@ -241,6 +307,21 @@ async function subAction(action) {
     payload.notes = document.getElementById('adminNotes').value.trim();
   }
 
+  await send(payload);
+}
+
+// Доступ к курсу или мини-продукту. Пустая дата = бессрочно.
+async function productAction(productId, action) {
+  const payload = { user_id: USER_ID, action, product_id: productId };
+  if (action === 'activate') {
+    payload.started_at      = new Date().toISOString().slice(0, 10);
+    payload.expires_at      = document.getElementById('pexp' + productId).value || '';
+    payload.payment_pending = false;
+  }
+  await send(payload);
+}
+
+async function send(payload) {
   try {
     const res = await fetch('/api/admin/subscription.php', {
       method: 'POST',

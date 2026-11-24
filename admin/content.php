@@ -13,6 +13,12 @@ $topics = db()->query(
      GROUP BY t.id
      ORDER BY t.sort_order, t.id'
 )->fetchAll();
+
+// Продукты для выбора при создании темы. Без привязки к продукту уроки
+// темы не увидит никто, а привязка не к тому продукту отдаст курс
+// участницам клуба — поэтому выбор делается сразу, а не потом.
+$products   = access_model_ready() ? all_products(false) : [];
+$clubIdHere = access_model_ready() ? club_product_id() : 0;
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -49,6 +55,18 @@ $topics = db()->query(
           <label>Название темы *</label>
           <input type="text" id="newTopicTitle" class="form-control" placeholder="Например: Растяжка">
         </div>
+        <?php if ($products): ?>
+        <div class="form-group" style="margin:0;min-width:220px">
+          <label>В какой продукт входит *</label>
+          <select id="newTopicProduct" class="form-control">
+            <?php foreach ($products as $p): ?>
+            <option value="<?= (int)$p['id'] ?>" <?= (int)$p['id'] === $clubIdHere ? 'selected' : '' ?>>
+              <?= htmlspecialchars($p['title'], ENT_QUOTES, 'UTF-8') ?>
+            </option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <?php endif; ?>
         <button class="btn btn-primary btn-sm" onclick="createTopic()">Создать</button>
         <button class="btn btn-ghost btn-sm" onclick="document.getElementById('newTopicForm').style.display='none'">Отмена</button>
       </div>
@@ -155,7 +173,10 @@ function openNewTopicForm() {
 async function createTopic() {
   const title = document.getElementById('newTopicTitle').value.trim();
   if (!title) return;
-  const res = await apiPost('/api/admin/topics.php', 'POST', { title });
+  const sel     = document.getElementById('newTopicProduct');
+  const payload = { title };
+  if (sel && sel.value) payload.product_ids = [Number(sel.value)];
+  const res = await apiPost('/api/admin/topics.php', 'POST', payload);
   if (res.ok) { location.reload(); }
   else showAlert('Ошибка создания темы.', 'error');
 }

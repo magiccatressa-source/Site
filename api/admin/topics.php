@@ -27,12 +27,21 @@ if ($method === 'POST') {
     $id->execute([$title, $data['description'] ?? null, $max]);
     $newId = (int)db()->lastInsertId();
 
-    // Новая тема по умолчанию входит в клуб. Без привязки к продукту
-    // её уроки не увидит никто — can_view_lesson() работает fail-closed.
-    // Привязку к другим продуктам задаёт раздел «Продукты» в админке.
-    if (access_model_ready() && ($clubId = club_product_id())) {
-        db()->prepare('INSERT IGNORE INTO product_topics (product_id, topic_id) VALUES (?, ?)')
-            ->execute([$clubId, $newId]);
+    // Без привязки к продукту уроки темы не увидит никто —
+    // can_view_lesson() работает fail-closed. Продукт выбирается в форме
+    // создания темы; если не передан, тема уходит в клуб, как раньше.
+    if (access_model_ready()) {
+        $productIds = [];
+        if (isset($data['product_ids']) && is_array($data['product_ids'])) {
+            $productIds = array_values(array_filter(array_map('intval', $data['product_ids'])));
+        }
+        if (!$productIds && ($clubId = club_product_id())) {
+            $productIds = [$clubId];
+        }
+        $ins = db()->prepare('INSERT IGNORE INTO product_topics (product_id, topic_id) VALUES (?, ?)');
+        foreach ($productIds as $pid) {
+            $ins->execute([$pid, $newId]);
+        }
     }
 
     log_admin($admin['id'], 'topic.create', '', $newId, ['title' => $title]);

@@ -32,14 +32,23 @@ $targetUser = $u->fetch();
 if (!$targetUser) json_err('user_not_found', 404);
 
 $productId = (int)($data['product_id'] ?? 0) ?: club_product_id();
-$amount    = (float)club_price_for_user($userId);
+
+// Сумма заказа — цена того продукта, которым управляем, а не всегда клуба.
+$product = product_by_id($productId);
+$amount  = $product
+    ? product_price_for_user($userId, $product)
+    : (float)club_price_for_user($userId);
 
 switch ($action) {
 
   case 'activate':
-    $startDate   = $data['started_at'] ?? date('Y-m-d');
-    $expiresDate = $data['expires_at'] ?? date('Y-m-d', strtotime('+30 days'));
-    $payStatus   = ($data['payment_pending'] ?? false) ? 'pending' : 'paid';
+    $startDate = $data['started_at'] ?? date('Y-m-d');
+    // Пустая дата окончания = бессрочный доступ (так выдаются разовые
+    // курсы). Если поля нет вовсе — месяц, как было раньше.
+    $expiresDate = array_key_exists('expires_at', $data)
+        ? (trim((string)$data['expires_at']) ?: null)
+        : date('Y-m-d', strtotime('+30 days'));
+    $payStatus = ($data['payment_pending'] ?? false) ? 'pending' : 'paid';
 
     settle_order($userId, $productId, $amount, 'manual', null, $payStatus);
     set_access($userId, $productId, $startDate, $expiresDate, false, 'manual', $admin['id']);

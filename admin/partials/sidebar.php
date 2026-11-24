@@ -22,6 +22,7 @@ function nav_a(string $href, string $label, string $cur): string {
     <span class="nav-section">Пользователи</span>
     <?= nav_a('/admin/users.php', 'Все пользователи', $cur) ?>
     <span class="nav-section">Контент</span>
+    <?= nav_a('/admin/products.php', 'Продукты', $cur) ?>
     <?= nav_a('/admin/content.php', 'Уроки и темы', $cur) ?>
     <?= nav_a('/admin/free-pages.php', 'Бесплатные страницы', $cur) ?>
     <span class="nav-section">Настройки</span>
