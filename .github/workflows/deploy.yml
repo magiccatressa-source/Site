@@ -5,11 +5,20 @@ on:
     branches:
       - main
 
+env:
+  SITE_URL: https://luchistaya-yoga.ru
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # Метка версии: кладём рядом с сайтом файл с номером коммита,
+      # чтобы после выкладки можно было проверить, что на сервер
+      # действительно приехали новые файлы.
+      - name: Записать метку версии
+        run: echo "$GITHUB_SHA" > version.txt
 
       - name: Deploy via rsync
         uses: burnett01/rsync-deployments@7.0.1
@@ -20,3 +29,44 @@ jobs:
           remote_host: focuspkp.beget.tech
           remote_user: focuspkp
           remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # Без этой проверки выкладка молча не работала с 9 сентября
+      # по 25 ноября: rsync падал, а никто этого не видел.
+      - name: Проверить, что сайт обновился
+        run: |
+          echo "Ждём, пока на сайте появится версия $GITHUB_SHA"
+          for i in $(seq 1 10); do
+            live=$(curl -fsS --max-time 20 "$SITE_URL/version.txt?cb=$i$RANDOM" 2>/dev/null | tr -d '[:space:]' || true)
+            if [ "$live" = "$GITHUB_SHA" ]; then
+              echo "Готово: на сайте версия $live"
+              exit 0
+            fi
+            echo "Попытка $i из 10: на сайте «$live»"
+            sleep 10
+          done
+          echo "ОШИБКА: за 100 секунд новая версия на сайте не появилась."
+          echo "Файлы не доехали до сервера, хотя rsync не ругался."
+          exit 1
+
+      # Ловит обратный случай: файлы доехали, но код падает с ошибкой.
+      - name: Проверить, что страницы живы
+        run: |
+          fail=0
+          check() {
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 25 "$SITE_URL$1")
+            if [ "$code" = "$2" ]; then
+              echo "OK   $1 -> $code"
+            else
+              echo "СБОЙ $1 -> $code, ожидали $2"
+              fail=1
+            fi
+          }
+          check /            200
+          check /trial       200
+          check /trial-extra 200
+          check /cabinet/    302
+          if [ "$fail" = "1" ]; then
+            echo "Страницы отвечают не так, как должны — проверьте сайт вручную."
+            exit 1
+          fi
+          echo "Все страницы отвечают как положено."
