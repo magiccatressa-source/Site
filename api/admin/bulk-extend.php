@@ -14,14 +14,15 @@ $days = (int)($data['days'] ?? 0);
 
 if ($days < 1 || $days > 365) json_err('invalid_days');
 
-$affected = db()->prepare(
-    'UPDATE subscriptions SET expires_at = DATE_ADD(expires_at, INTERVAL ? DAY)
-     WHERE status IN ("active", "trial") AND expires_at IS NOT NULL'
-);
-$affected->execute([$days]);
-$count = $affected->rowCount();
+// Продление теперь в разрезе продукта. Без параметра — клуб,
+// чтобы существующая кнопка в админке работала как раньше.
+$productId = (int)($data['product_id'] ?? 0) ?: club_product_id();
+$product   = product_by_id($productId);
 
-log_admin($admin['id'], 'subscription.bulk_extend', '', 0, [
+$count = bulk_extend_product($productId, $days);
+
+log_admin($admin['id'], 'access.bulk_extend', '', 0, [
+    'product'  => $product['slug'] ?? $productId,
     'days'     => $days,
     'affected' => $count,
 ]);

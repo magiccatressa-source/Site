@@ -2,6 +2,7 @@
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/response.php';
+require_once __DIR__ . '/access.php';
 
 // ── Session bootstrap ──────────────────────────────────────────
 function start_user_session(): void {
@@ -80,7 +81,18 @@ function require_admin(): array {
     return $admin;
 }
 
-// ── Subscription helpers ──────────────────────────────────────
+// ── Subscription helpers (УСТАРЕЛИ) ───────────────────────────
+// Модель доступа переехала в includes/access.php: продукты и
+// user_access вместо одной подписки на пользователя. Функции ниже
+// оставлены обёртками над новой моделью, чтобы ни одно пропущенное
+// место не считало доступ по старой таблице. В новом коде вызывайте
+// has_access() / can_view_lesson() / access_display_status() напрямую.
+
+/**
+ * @deprecated Используйте get_access_row($userId, $productId).
+ * Читает старую таблицу subscriptions. Данные там актуальны, пока
+ * включено зеркалирование в legacy_sync_subscription().
+ */
 function get_subscription(int $userId): ?array {
     $s = db()->prepare(
         'SELECT * FROM subscriptions WHERE user_id = ? ORDER BY created_at DESC LIMIT 1'
@@ -89,39 +101,21 @@ function get_subscription(int $userId): ?array {
     return $s->fetch() ?: null;
 }
 
+/** @deprecated Используйте has_paid_product_before(). */
 function has_paid_before(int $userId): bool {
-    $s = db()->prepare(
-        "SELECT COUNT(*) FROM subscriptions WHERE user_id = ? AND payment_status = 'paid'"
-    );
-    $s->execute([$userId]);
-    return (int)$s->fetchColumn() > 0;
+    return has_paid_product_before($userId, club_product_id());
 }
 
+/** @deprecated Используйте has_access() или user_has_any_access(). */
 function has_active_access(?array $sub): bool {
-    if (!$sub) return false;
-    if (!in_array($sub['status'], ['active', 'trial'], true)) return false;
-    if ($sub['expires_at'] && $sub['expires_at'] < date('Y-m-d')) return false;
-    return true;
+    if (!$sub || empty($sub['user_id'])) return false;
+    return has_access((int)$sub['user_id'], club_product_id());
 }
 
+/** @deprecated Используйте access_display_status($userId, $productId). */
 function subscription_display_status(?array $sub): string {
-    if (!$sub || $sub['status'] === 'inactive' || $sub['status'] === 'expired') {
-        return 'inactive';
-    }
-    // Treat expired subscriptions as inactive
-    if ($sub['expires_at'] && $sub['expires_at'] < date('Y-m-d') && !$sub['is_paused']) {
-        return 'inactive';
-    }
-    if ($sub['status'] === 'trial') {
-        return 'trial';
-    }
-    if ($sub['is_paused']) {
-        return 'paused';
-    }
-    if ($sub['payment_status'] === 'pending') {
-        return 'pending_payment';
-    }
-    return 'active';
+    if (!$sub || empty($sub['user_id'])) return 'inactive';
+    return access_display_status((int)$sub['user_id'], club_product_id());
 }
 
 // ── Admin audit log ───────────────────────────────────────────

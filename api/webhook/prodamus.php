@@ -11,6 +11,7 @@
 
 require_once __DIR__ . '/../../includes/db.php';
 require_once __DIR__ . '/../../includes/prodamus-hmac.php';
+require_once __DIR__ . '/../../includes/access.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -113,18 +114,33 @@ try {
     }
 
     // Факт получения вебхука "Заказ оплачен" с валидной подписью и суммой = успешная оплата
-    $expiresAt = date('Y-m-d', strtotime('+30 days'));
+    $clubId = club_product_id();
 
-    $stmt = db()->prepare(
-        'UPDATE subscriptions
-         SET status = ?, payment_status = ?, payment_method = ?,
-             prodamus_transaction_id = ?, payment_date = NOW(),
-             expires_at = ?, started_at = CURDATE()
-         WHERE user_id = ?'
+    // Защита от повторной доставки: Prodamus может прислать вебхук
+    // дважды, и без этой проверки доступ продлился бы два раза.
+    if ($orderId && access_model_ready()) {
+        $dup = db()->prepare(
+            "SELECT id FROM orders WHERE external_id = ? AND status = 'paid' LIMIT 1"
+        );
+        $dup->execute([(string)$orderId]);
+        if ($dup->fetchColumn()) {
+            error_log('Prodamus webhook: заказ ' . $orderId . ' уже оплачен, повторную выдачу пропускаю');
+            http_response_code(200);
+            echo json_encode(['status' => 'ok', 'message' => 'already processed']);
+            exit;
+        }
+    }
+
+    $internalOrderId = settle_order(
+        $userId, $clubId, $amount, 'prodamus',
+        $orderId ? (string)$orderId : null, 'paid'
     );
-    $stmt->execute(['active', 'paid', 'prodamus', $orderId, $expiresAt, $userId]);
+    grant_access($userId, $clubId, null, 'payment', $internalOrderId ?: null);
 
-    error_log('Prodamus webhook: subscription activated for user ' . $userId . ' (email=' . $email . ', sum=' . $amount . ')');
+    $access = get_access_row($userId, $clubId);
+    error_log('Prodamus webhook: доступ к клубу выдан пользователю ' . $userId
+        . ' (email=' . $email . ', sum=' . $amount
+        . ', до ' . ($access['expires_at'] ?? '—') . ')');
 
     http_response_code(200);
     echo json_encode(['status' => 'ok']);

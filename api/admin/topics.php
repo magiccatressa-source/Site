@@ -26,6 +26,15 @@ if ($method === 'POST') {
     $id = db()->prepare('INSERT INTO topics (title, description, sort_order) VALUES (?, ?, ?)');
     $id->execute([$title, $data['description'] ?? null, $max]);
     $newId = (int)db()->lastInsertId();
+
+    // Новая тема по умолчанию входит в клуб. Без привязки к продукту
+    // её уроки не увидит никто — can_view_lesson() работает fail-closed.
+    // Привязку к другим продуктам задаёт раздел «Продукты» в админке.
+    if (access_model_ready() && ($clubId = club_product_id())) {
+        db()->prepare('INSERT IGNORE INTO product_topics (product_id, topic_id) VALUES (?, ?)')
+            ->execute([$clubId, $newId]);
+    }
+
     log_admin($admin['id'], 'topic.create', '', $newId, ['title' => $title]);
     json_ok(['id' => $newId], 201);
 }

@@ -1,4 +1,14 @@
 <?php
+/**
+ * Управление доступом пользователя из админки.
+ *
+ * Названия действий сохранены с тех пор, когда модель была «одна
+ * подписка на пользователя», чтобы не ломать admin/user-edit.php.
+ * Внутри всё идёт через includes/access.php — ту же точку входа,
+ * которой пользуется оплата. Необязательный product_id позволяет
+ * управлять доступом к любому продукту; по умолчанию — клуб.
+ */
+
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/csrf.php';
 require_once __DIR__ . '/../../includes/db.php';
@@ -21,104 +31,58 @@ $u->execute([$userId]);
 $targetUser = $u->fetch();
 if (!$targetUser) json_err('user_not_found', 404);
 
-// Get or create subscription
-$s = db()->prepare('SELECT * FROM subscriptions WHERE user_id = ? ORDER BY created_at DESC LIMIT 1');
-$s->execute([$userId]);
-$sub = $s->fetch();
+$productId = (int)($data['product_id'] ?? 0) ?: club_product_id();
+$amount    = (float)club_price_for_user($userId);
 
 switch ($action) {
 
   case 'activate':
-    $startDate  = $data['started_at'] ?? date('Y-m-d');
+    $startDate   = $data['started_at'] ?? date('Y-m-d');
     $expiresDate = $data['expires_at'] ?? date('Y-m-d', strtotime('+30 days'));
-    $payStatus  = ($data['payment_pending'] ?? false) ? 'pending' : 'paid';
+    $payStatus   = ($data['payment_pending'] ?? false) ? 'pending' : 'paid';
 
-    if ($sub) {
-      db()->prepare(
-        'UPDATE subscriptions SET status = "active", is_paused = 0, payment_status = ?,
-         started_at = ?, expires_at = ?, pause_started_at = NULL, pause_notes = NULL
-         WHERE id = ?'
-      )->execute([$payStatus, $startDate, $expiresDate, $sub['id']]);
-    } else {
-      db()->prepare(
-        'INSERT INTO subscriptions (user_id, status, is_paused, payment_status, started_at, expires_at)
-         VALUES (?, "active", 0, ?, ?, ?)'
-      )->execute([$userId, $payStatus, $startDate, $expiresDate]);
-    }
-    log_admin($admin['id'], 'subscription.activate', 'user', $userId, [
-      'started_at' => $startDate, 'expires_at' => $expiresDate, 'payment_status' => $payStatus,
-    ]);
+    settle_order($userId, $productId, $amount, 'manual', null, $payStatus);
+    set_access($userId, $productId, $startDate, $expiresDate, false, 'manual', $admin['id']);
     break;
 
   case 'deactivate':
-    if ($sub) {
-      db()->prepare('UPDATE subscriptions SET status = "inactive", is_paused = 0 WHERE id = ?')
-          ->execute([$sub['id']]);
-    }
-    log_admin($admin['id'], 'subscription.deactivate', 'user', $userId);
+    revoke_access($userId, $productId, $admin['id']);
     break;
 
   case 'trial':
     $expiresDate = $data['expires_at'] ?? date('Y-m-d', strtotime('+7 days'));
-    if ($sub) {
-      db()->prepare('UPDATE subscriptions SET status = "trial", is_paused = 0, payment_status = NULL, expires_at = ? WHERE id = ?')
-          ->execute([$expiresDate, $sub['id']]);
-    } else {
-      db()->prepare('INSERT INTO subscriptions (user_id, status, expires_at) VALUES (?, "trial", ?)')
-          ->execute([$userId, $expiresDate]);
-    }
-    log_admin($admin['id'], 'subscription.trial', 'user', $userId, ['expires_at' => $expiresDate]);
+    set_access($userId, $productId, date('Y-m-d'), $expiresDate, true, 'promo', $admin['id']);
     break;
 
   case 'pause':
-    if (!$sub) json_err('no_subscription');
     $pauseNotes = trim($data['pause_notes'] ?? '');
-    db()->prepare(
-      'UPDATE subscriptions SET is_paused = 1, pause_started_at = CURDATE(), pause_notes = ? WHERE id = ?'
-    )->execute([$pauseNotes ?: null, $sub['id']]);
-    log_admin($admin['id'], 'subscription.pause', 'user', $userId, ['notes' => $pauseNotes]);
+    freeze_access($userId, $productId, $pauseNotes, $admin['id']);
     break;
 
   case 'unpause':
-    if (!$sub || !$sub['is_paused']) json_err('not_paused');
-    // Extend expires_at by number of paused days
-    $pauseStart = $sub['pause_started_at'] ?? date('Y-m-d');
-    $pausedDays = (int)(new DateTime())->diff(new DateTime($pauseStart))->days;
-    db()->prepare(
-      'UPDATE subscriptions SET is_paused = 0, pause_started_at = NULL, pause_notes = NULL,
-       expires_at = DATE_ADD(expires_at, INTERVAL ? DAY) WHERE id = ?'
-    )->execute([$pausedDays, $sub['id']]);
-    log_admin($admin['id'], 'subscription.unpause', 'user', $userId, ['days_added' => $pausedDays]);
+    $row = get_access_row($userId, $productId);
+    if (!$row || !$row['is_frozen']) json_err('not_paused');
+    unfreeze_access($userId, $productId, $admin['id']);
     break;
 
   case 'confirm_payment':
-    if (!$sub) json_err('no_subscription');
-    db()->prepare('UPDATE subscriptions SET payment_status = "paid" WHERE id = ?')
-        ->execute([$sub['id']]);
-    log_admin($admin['id'], 'subscription.paid', 'user', $userId);
+    settle_order($userId, $productId, $amount, 'manual', null, 'paid');
+    log_admin($admin['id'], 'access.payment_confirmed', 'user', $userId);
     break;
 
   case 'set_pending':
-    if (!$sub) json_err('no_subscription');
-    db()->prepare('UPDATE subscriptions SET payment_status = "pending" WHERE id = ?')
-        ->execute([$sub['id']]);
-    log_admin($admin['id'], 'subscription.pending', 'user', $userId);
+    settle_order($userId, $productId, $amount, 'manual', null, 'pending');
+    log_admin($admin['id'], 'access.payment_pending', 'user', $userId);
     break;
 
   case 'update_expires':
     $expiresDate = $data['expires_at'] ?? '';
     if (!$expiresDate) json_err('missing_expires_at');
-    if ($sub) {
-      db()->prepare('UPDATE subscriptions SET expires_at = ? WHERE id = ?')
-          ->execute([$expiresDate, $sub['id']]);
-    }
-    log_admin($admin['id'], 'subscription.update_expires', 'user', $userId, ['expires_at' => $expiresDate]);
+    set_access_expiry($userId, $productId, $expiresDate, $admin['id']);
     break;
 
   case 'set_notes':
-    if (!$sub) json_err('no_subscription');
-    db()->prepare('UPDATE subscriptions SET notes = ? WHERE id = ?')
-        ->execute([$data['notes'] ?? null, $sub['id']]);
+    set_access_notes($userId, $productId, $data['notes'] ?? null);
     break;
 
   default:

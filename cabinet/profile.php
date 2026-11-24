@@ -4,9 +4,11 @@ require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/csrf.php';
 
 $user = require_login();
-$sub = get_subscription($user['id']);
-$isReturning = has_paid_before($user['id']);
-$suggestedAmount = $isReturning ? 3000 : 3500;
+$clubId      = club_product_id();
+$clubAccess  = get_access_row((int)$user['id'], $clubId);
+$expiresAt   = $clubAccess['expires_at'] ?? null;
+$isReturning = has_paid_product_before((int)$user['id'], $clubId);
+$suggestedAmount = club_price_for_user((int)$user['id']);
 define('SBP_PHONE', '+79125880826');
 define('SBP_PHONE_DISPLAY', '+7 912 588-08-26');
 
@@ -17,7 +19,7 @@ $statusLabels = [
     'trial'           => 'Пробный доступ',
     'inactive'        => 'Не активна',
 ];
-$subStatus = subscription_display_status($sub);
+$subStatus = access_display_status((int)$user['id'], $clubId);
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -130,11 +132,11 @@ $subStatus = subscription_display_status($sub);
   <!-- Subscription -->
   <div class="card" style="margin-bottom:24px">
     <p class="card-title">Подписка</p>
-    <?php if ($sub): ?>
+    <?php if ($clubAccess): ?>
     <p style="font-size:15px">
       Статус: <strong><?= $statusLabels[$subStatus] ?? 'Не активна' ?></strong>
-      <?php if ($sub['expires_at']): ?>
-      · до <?= date('d.m.Y', strtotime($sub['expires_at'])) ?>
+      <?php if ($expiresAt): ?>
+      · до <?= date('d.m.Y', strtotime($expiresAt)) ?>
       <?php endif; ?>
     </p>
     <?php else: ?>

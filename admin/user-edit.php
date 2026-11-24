@@ -12,9 +12,12 @@ $u->execute([$userId]);
 $user = $u->fetch();
 if (!$user) { header('Location: /admin/users.php'); exit; }
 
-$s = db()->prepare('SELECT * FROM subscriptions WHERE user_id = ? ORDER BY created_at DESC LIMIT 1');
-$s->execute([$userId]);
-$sub = $s->fetch();
+// Доступ к клубу. Управление доступами к остальным продуктам
+// появится в разделе «Продукты» админки.
+$clubId    = club_product_id();
+$access    = get_access_row($userId, $clubId);
+$payStatus = product_payment_status($userId, $clubId);
+$statusKey = access_display_status($userId, $clubId);
 
 $logRows = db()->prepare(
     'SELECT al.created_at, al.action, al.details, u.name AS admin_name
@@ -26,13 +29,13 @@ $logRows = db()->prepare(
 $logRows->execute([$userId]);
 $logs = $logRows->fetchAll();
 
-function statusLabel($sub): string {
-    if (!$sub || in_array($sub['status'], ['inactive','expired'])) return 'Не активна';
-    if ($sub['status'] === 'trial') return 'Пробный доступ';
-    if ($sub['is_paused']) return 'На паузе';
-    if ($sub['payment_status'] === 'pending') return 'Ожидает оплаты';
-    return 'Активна';
-}
+$statusLabels = [
+    'active'          => 'Активна',
+    'trial'           => 'Пробный доступ',
+    'paused'          => 'На паузе',
+    'pending_payment' => 'Ожидает подтверждения',
+    'inactive'        => 'Не активна',
+];
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -71,20 +74,21 @@ function statusLabel($sub): string {
 
       <!-- Subscription status -->
       <div class="acard">
-        <div class="acard-title">Подписка: <?= statusLabel($sub) ?></div>
-        <?php if ($sub): ?>
+        <div class="acard-title">Клуб: <?= $statusLabels[$statusKey] ?? 'Не активна' ?></div>
+        <?php if ($access): ?>
         <table style="font-size:13px;width:100%;border-collapse:collapse;margin-bottom:16px">
-          <tr><td style="color:var(--muted);padding:3px 0;width:110px">Статус</td><td><?= htmlspecialchars($sub['status'], ENT_QUOTES, 'UTF-8') ?><?= $sub['is_paused'] ? ' (пауза)' : '' ?></td></tr>
-          <tr><td style="color:var(--muted);padding:3px 0">Оплата</td><td><?= $sub['payment_status'] === 'pending' ? 'Ожидается' : ($sub['payment_status'] === 'paid' ? 'Оплачена' : '—') ?></td></tr>
-          <tr><td style="color:var(--muted);padding:3px 0">Начало</td><td><?= $sub['started_at'] ? date('d.m.Y', strtotime($sub['started_at'])) : '—' ?></td></tr>
-          <tr><td style="color:var(--muted);padding:3px 0">До</td><td><?= $sub['expires_at'] ? date('d.m.Y', strtotime($sub['expires_at'])) : '—' ?></td></tr>
-          <?php if ($sub['is_paused'] && $sub['pause_started_at']): ?>
-          <tr><td style="color:var(--muted);padding:3px 0">Пауза с</td><td><?= date('d.m.Y', strtotime($sub['pause_started_at'])) ?></td></tr>
+          <tr><td style="color:var(--muted);padding:3px 0;width:110px">Статус</td><td><?= htmlspecialchars($access['status'], ENT_QUOTES, 'UTF-8') ?><?= $access['is_trial'] ? ', пробный' : '' ?><?= $access['is_frozen'] ? ' (заморозка)' : '' ?></td></tr>
+          <tr><td style="color:var(--muted);padding:3px 0">Оплата</td><td><?= $payStatus === 'pending' ? 'Ожидает подтверждения' : ($payStatus === 'paid' ? 'Оплачена' : '—') ?></td></tr>
+          <tr><td style="color:var(--muted);padding:3px 0">Выдан</td><td><?= htmlspecialchars($access['source'], ENT_QUOTES, 'UTF-8') ?></td></tr>
+          <tr><td style="color:var(--muted);padding:3px 0">Начало</td><td><?= $access['starts_at'] ? date('d.m.Y', strtotime($access['starts_at'])) : '—' ?></td></tr>
+          <tr><td style="color:var(--muted);padding:3px 0">До</td><td><?= $access['expires_at'] ? date('d.m.Y', strtotime($access['expires_at'])) : 'бессрочно' ?></td></tr>
+          <?php if ($access['is_frozen'] && $access['frozen_at']): ?>
+          <tr><td style="color:var(--muted);padding:3px 0">Заморозка с</td><td><?= date('d.m.Y', strtotime($access['frozen_at'])) ?></td></tr>
           <?php endif; ?>
         </table>
         <?php endif; ?>
-        <?php if ($sub && $sub['notes']): ?>
-        <p style="font-size:13px;color:var(--muted);font-style:italic;margin-bottom:12px">Заметка: <?= htmlspecialchars($sub['notes'], ENT_QUOTES, 'UTF-8') ?></p>
+        <?php if ($access && $access['notes']): ?>
+        <p style="font-size:13px;color:var(--muted);font-style:italic;margin-bottom:12px">Заметка: <?= htmlspecialchars($access['notes'], ENT_QUOTES, 'UTF-8') ?></p>
         <?php endif; ?>
       </div>
     </div>
@@ -99,11 +103,11 @@ function statusLabel($sub): string {
         <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
           <div class="form-group" style="margin:0">
             <label>Дата начала</label>
-            <input type="date" id="startDate" class="form-control" value="<?= $sub && $sub['started_at'] ? $sub['started_at'] : date('Y-m-d') ?>" style="width:auto">
+            <input type="date" id="startDate" class="form-control" value="<?= $access && $access['starts_at'] ? date('Y-m-d', strtotime($access['starts_at'])) : date('Y-m-d') ?>" style="width:auto">
           </div>
           <div class="form-group" style="margin:0">
             <label>Дата окончания</label>
-            <input type="date" id="expiresDate" class="form-control" value="<?= $sub && $sub['expires_at'] ? $sub['expires_at'] : date('Y-m-d', strtotime('+30 days')) ?>" style="width:auto">
+            <input type="date" id="expiresDate" class="form-control" value="<?= $access && $access['expires_at'] ? date('Y-m-d', strtotime($access['expires_at'])) : date('Y-m-d', strtotime('+30 days')) ?>" style="width:auto">
           </div>
           <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
             <input type="checkbox" id="payPending"> Рассрочка (ожидается оплата)
@@ -128,7 +132,7 @@ function statusLabel($sub): string {
       <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--cream-deep)">
         <p style="font-weight:500;margin-bottom:10px">Статус</p>
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
-          <?php if ($sub && $sub['is_paused']): ?>
+          <?php if ($access && $access['is_frozen']): ?>
           <button class="btn btn-success btn-sm" onclick="subAction('unpause')">Снять паузу</button>
           <?php else: ?>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -156,7 +160,7 @@ function statusLabel($sub): string {
           <div class="form-group" style="margin:0">
             <label>Новая дата</label>
             <input type="date" id="newExpires" class="form-control"
-                   value="<?= $sub && $sub['expires_at'] ? $sub['expires_at'] : date('Y-m-d') ?>" style="width:auto">
+                   value="<?= $access && $access['expires_at'] ? date('Y-m-d', strtotime($access['expires_at'])) : date('Y-m-d') ?>" style="width:auto">
           </div>
           <button class="btn btn-ghost btn-sm" onclick="subAction('update_expires')">Сохранить</button>
         </div>
@@ -168,7 +172,7 @@ function statusLabel($sub): string {
         <div style="display:flex;gap:10px">
           <input type="text" id="adminNotes" class="form-control"
                  placeholder="Заметка…"
-                 value="<?= htmlspecialchars($sub['notes'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                 value="<?= htmlspecialchars($access['notes'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
           <button class="btn btn-ghost btn-sm" onclick="subAction('set_notes')">Сохранить</button>
         </div>
       </div>

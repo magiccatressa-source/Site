@@ -13,17 +13,18 @@ only_post();
 $user = require_login();
 
 try {
-    $sub = get_subscription($user['id']);
+    $clubId = club_product_id();
+    $amount = (float)club_price_for_user((int)$user['id']);
 
-    // Активируем подписку
-    $expiresAt = date('Y-m-d', strtotime('+30 days'));
-    $stmt = db()->prepare(
-        'UPDATE subscriptions
-         SET status = ?, payment_status = ?,
-             expires_at = ?, started_at = CURDATE()
-         WHERE user_id = ?'
+    // Заказ остаётся в статусе pending: перевод по телефону Любовь
+    // подтверждает вручную. Доступ при этом выдаётся сразу.
+    $orderId = settle_order(
+        (int)$user['id'], $clubId, $amount, 'phone', null, 'pending'
     );
-    $stmt->execute(['active', 'pending', $expiresAt, $user['id']]);
+    grant_access((int)$user['id'], $clubId, null, 'payment', $orderId ?: null);
+
+    $access    = get_access_row((int)$user['id'], $clubId);
+    $expiresAt = $access['expires_at'] ?? date('Y-m-d', strtotime('+30 days'));
 
     // Уведомляем владельца в Telegram через Bot API (если настроен)
     $botToken = setting('telegram_bot_token');

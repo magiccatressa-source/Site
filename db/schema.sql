@@ -143,6 +143,104 @@ INSERT INTO settings (setting_key, setting_value) VALUES
 ON DUPLICATE KEY UPDATE setting_key = setting_key;
 
 -- ============================================================
+-- PRODUCTS — каталог продуктов (клуб, курсы, мини-продукты)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS products (
+    id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    slug           VARCHAR(100) NOT NULL,
+    title          VARCHAR(255) NOT NULL,
+    subtitle       VARCHAR(255) DEFAULT NULL,
+    description    TEXT DEFAULT NULL,
+    type           ENUM('subscription','one_time') NOT NULL DEFAULT 'one_time',
+    price          DECIMAL(10,2) NOT NULL DEFAULT 0,
+    price_renewal  DECIMAL(10,2) DEFAULT NULL,
+    duration_days  INT UNSIGNED DEFAULT NULL,
+    payment_url    VARCHAR(500) DEFAULT NULL,
+    contact_url    VARCHAR(500) DEFAULT NULL,
+    cover_image    VARCHAR(255) DEFAULT NULL,
+    is_active      TINYINT(1) NOT NULL DEFAULT 1,
+    sort_order     INT UNSIGNED NOT NULL DEFAULT 0,
+    created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_slug (slug),
+    INDEX idx_active_sort (is_active, sort_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO products
+    (slug, title, subtitle, description, type, price, price_renewal,
+     duration_days, payment_url, contact_url, is_active, sort_order)
+SELECT 'club', 'Клуб «Лучистая йога»',
+       'Живые занятия дважды в неделю и весь архив уроков',
+       'Живые занятия в Zoom два раза в неделю, доступ ко всему архиву уроков, записи всех эфиров, ответы на вопросы и поддерживающее сообщество.',
+       'subscription', 3500.00, 3000.00, 30,
+       'https://luchistaya-yoga.payform.ru', 'https://t.me/indicatrisa', 1, 10
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM products WHERE slug = 'club');
+
+-- ============================================================
+-- PRODUCT_TOPICS — какие темы входят в какой продукт
+-- ============================================================
+CREATE TABLE IF NOT EXISTS product_topics (
+    product_id INT UNSIGNED NOT NULL,
+    topic_id   INT UNSIGNED NOT NULL,
+    PRIMARY KEY (product_id, topic_id),
+    INDEX idx_topic (topic_id),
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    FOREIGN KEY (topic_id)   REFERENCES topics(id)   ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
+-- ORDERS — заказы
+-- ============================================================
+CREATE TABLE IF NOT EXISTS orders (
+    id               INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id          INT UNSIGNED NOT NULL,
+    product_id       INT UNSIGNED NOT NULL,
+    amount           DECIMAL(10,2) NOT NULL DEFAULT 0,
+    status           ENUM('pending','paid','failed','refunded') NOT NULL DEFAULT 'pending',
+    payment_provider VARCHAR(50) DEFAULT NULL,
+    external_id      VARCHAR(100) DEFAULT NULL,
+    notes            VARCHAR(500) DEFAULT NULL,
+    created_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    paid_at          DATETIME DEFAULT NULL,
+    FOREIGN KEY (user_id)    REFERENCES users(id)    ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT,
+    INDEX idx_user_product (user_id, product_id),
+    INDEX idx_status (status),
+    INDEX idx_external_id (external_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
+-- USER_ACCESS — доступы пользователей к продуктам
+--
+-- Заморозка — отдельный флаг is_frozen, а не статус: заморозка
+-- не отбирает доступ (см. has_access() в includes/access.php).
+-- ============================================================
+CREATE TABLE IF NOT EXISTS user_access (
+    id           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id      INT UNSIGNED NOT NULL,
+    product_id   INT UNSIGNED NOT NULL,
+    starts_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at   DATETIME DEFAULT NULL,
+    status       ENUM('active','expired','revoked') NOT NULL DEFAULT 'active',
+    is_frozen    TINYINT(1) NOT NULL DEFAULT 0,
+    frozen_at    DATE DEFAULT NULL,
+    freeze_notes VARCHAR(255) DEFAULT NULL,
+    is_trial     TINYINT(1) NOT NULL DEFAULT 0,
+    source       ENUM('manual','payment','promo') NOT NULL DEFAULT 'manual',
+    order_id     INT UNSIGNED DEFAULT NULL,
+    notes        TEXT DEFAULT NULL,
+    created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id)    REFERENCES users(id)    ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    FOREIGN KEY (order_id)   REFERENCES orders(id)   ON DELETE SET NULL,
+    INDEX idx_user_product (user_id, product_id),
+    INDEX idx_product_status (product_id, status),
+    INDEX idx_expires_at (expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
 -- PASSWORD RESETS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS password_resets (

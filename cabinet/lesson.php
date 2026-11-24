@@ -5,20 +5,16 @@ require_once __DIR__ . '/../includes/csrf.php';
 
 $user = require_login();
 
-$sub = get_subscription($user['id']);
-if (!has_active_access($sub)) {
-    header('Location: /cabinet/');
-    exit;
-}
-
 $lessonId = (int)($_GET['id'] ?? 0);
 if (!$lessonId) {
     header('Location: /cabinet/');
     exit;
 }
 
+// Урок читаем до проверки доступа: он нужен и для страницы-заглушки.
 $s = db()->prepare(
-    'SELECT l.id, l.title, l.description, l.kinescope_id, l.duration_min, t.title AS topic_title
+    'SELECT l.id, l.title, l.description, l.kinescope_id, l.duration_min,
+            l.topic_id, t.title AS topic_title
      FROM lessons l
      JOIN topics t ON t.id = l.topic_id
      WHERE l.id = ? AND l.is_visible = 1'
@@ -28,6 +24,14 @@ $lesson = $s->fetch();
 
 if (!$lesson) {
     header('Location: /cabinet/');
+    exit;
+}
+
+// Нет доступа — не 403 и не редирект, а описание продукта с кнопкой
+// покупки: человек мог прийти по прямой ссылке на конкретный урок,
+// и это лучшая точка допродажи, какая у нас есть.
+if (!can_view_lesson($user['id'], $lessonId)) {
+    include __DIR__ . '/partials/locked-lesson.php';
     exit;
 }
 

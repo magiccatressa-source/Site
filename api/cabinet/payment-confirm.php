@@ -11,30 +11,26 @@ csrf_verify();
 
 $userId = (int)$user['id'];
 
-$s = db()->prepare('SELECT * FROM subscriptions WHERE user_id = ? ORDER BY created_at DESC LIMIT 1');
-$s->execute([$userId]);
-$sub = $s->fetch();
+$clubId = club_product_id();
+$access = get_access_row($userId, $clubId);
 
-// Block double-activation: active subscription that hasn't expired yet
-if ($sub && $sub['status'] === 'active' && !$sub['is_paused']
-    && $sub['expires_at'] && $sub['expires_at'] >= date('Y-m-d')) {
+// Block double-activation: активный непробный доступ, который ещё не истёк
+if ($access && $access['status'] === 'active' && !$access['is_trial'] && !$access['is_frozen']
+    && $access['expires_at'] && strtotime($access['expires_at']) > time()) {
     json_err('already_active', 409);
 }
 
-$startDate   = date('Y-m-d');
-$expiresDate = date('Y-m-d', strtotime('+30 days'));
+// Заказ помечается оплаченным — так эта кнопка работала и раньше.
+// Кнопка в кабинете (api/payment/phone-confirm.php) при том же действии
+// ставит 'pending'. Расхождение досталось в наследство; какой из двух
+// вариантов правильный — решение Любови, здесь поведение не меняем.
+$orderId = settle_order($userId, $clubId, (float)club_price_for_user($userId), 'phone', null, 'paid');
+grant_access($userId, $clubId, null, 'payment', $orderId ?: null);
 
-if ($sub) {
-    db()->prepare(
-        'UPDATE subscriptions SET status = "active", is_paused = 0, payment_status = "paid",
-         started_at = ?, expires_at = ?, pause_started_at = NULL, pause_notes = NULL WHERE id = ?'
-    )->execute([$startDate, $expiresDate, $sub['id']]);
-} else {
-    db()->prepare(
-        'INSERT INTO subscriptions (user_id, status, is_paused, payment_status, started_at, expires_at)
-         VALUES (?, "active", 0, "paid", ?, ?)'
-    )->execute([$userId, $startDate, $expiresDate]);
-}
+$newAccess   = get_access_row($userId, $clubId);
+$expiresDate = $newAccess && $newAccess['expires_at']
+    ? date('Y-m-d', strtotime($newAccess['expires_at']))
+    : date('Y-m-d', strtotime('+30 days'));
 
 // Notify admin via Telegram
 $adminChatId = setting('telegram_admin_chat_id');

@@ -13,18 +13,27 @@ $user = require_login();
 
 $data = json_decode(file_get_contents('php://input'), true);
 $method = $data['payment_method'] ?? 'prodamus';
-// Только значения, допустимые ENUM payment_method в БД
 if (!in_array($method, ['phone', 'prodamus', 'manual'], true)) {
     $method = 'prodamus';
 }
 
 try {
-    $stmt = db()->prepare(
-        'UPDATE subscriptions
-         SET payment_method = ?, payment_status = ?
-         WHERE user_id = ?'
-    );
-    $stmt->execute([$method, 'pending', $user['id']]);
+    $clubId = club_product_id();
+
+    // Заказ создаём только если незакрытого ещё нет: человек может
+    // нажать «оплатить» несколько раз, дубли в истории не нужны.
+    $existing = latest_order((int)$user['id'], $clubId);
+    if (!$existing || $existing['status'] !== 'pending') {
+        create_order(
+            (int)$user['id'],
+            $clubId,
+            (float)club_price_for_user((int)$user['id']),
+            $method,
+            'pending',
+            null,
+            'Переход на платёжную форму, оплата ещё не подтверждена'
+        );
+    }
 
     json_ok(['status' => 'marked_pending']);
 

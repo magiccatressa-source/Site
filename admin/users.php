@@ -19,48 +19,84 @@ if ($search) {
     $params   = array_merge($params, ["%$search%", "%$search%", "%$search%"]);
 }
 
-$statusBadgeMap = [
-    'active'  => ['label' => 'Активна',               'cls' => 'badge-active'],
-    'trial'   => ['label' => 'Пробный',               'cls' => 'badge-trial'],
-    'paused'  => ['label' => 'На паузе',              'cls' => 'badge-paused'],
-    'pending' => ['label' => 'Ожидает оплаты',        'cls' => 'badge-pending'],
-    'inactive'=> ['label' => 'Не активна',            'cls' => 'badge-inactive'],
-];
-
-// Status filter requires subquery join
-$havingClause = '';
-if ($statusFilter) {
-    // Will handle in PHP after fetch (simpler for this scale)
-}
-
 $whereStr = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
-$total = db()->prepare("SELECT COUNT(*) FROM users u $whereStr");
-$total->execute($params);
-$totalCount = (int)$total->fetchColumn();
-$totalPages = max(1, ceil($totalCount / $perPage));
-
-$stmt = db()->prepare(
-    "SELECT u.id, u.name, u.last_name, u.email, u.phone, u.vk_url, u.tg_url, u.created_at, u.email_verified,
-            s.status AS sub_status, s.is_paused, s.payment_status, s.expires_at
-     FROM users u
-     LEFT JOIN subscriptions s ON s.user_id = u.id AND s.id = (
-       SELECT id FROM subscriptions WHERE user_id = u.id ORDER BY created_at DESC LIMIT 1
-     )
-     $whereStr
-     ORDER BY u.created_at DESC
-     LIMIT $perPage OFFSET $offset"
-);
-$stmt->execute($params);
-$users = $stmt->fetchAll();
-
-function sub_badge(?string $status, bool $paused, ?string $payment): array {
-    if (!$status || $status === 'inactive' || $status === 'expired') return ['Не активна', 'badge-inactive'];
-    if ($status === 'trial')  return ['Пробный', 'badge-trial'];
-    if ($paused)              return ['На паузе', 'badge-paused'];
-    if ($payment === 'pending') return ['Ожидает подтверждения', 'badge-pending'];
-    return ['Активна', 'badge-active'];
+// Доступ к клубу + статус последнего заказа по нему.
+// Фильтр по статусу считается в PHP и применяется ДО постраничной
+// разбивки — раньше он был заявлен в интерфейсе, но не работал.
+if (access_model_ready()) {
+    $clubId = club_product_id();
+    $stmt = db()->prepare(
+        "SELECT u.id, u.name, u.last_name, u.email, u.phone, u.vk_url, u.tg_url,
+                u.created_at, u.email_verified,
+                (SELECT o.status FROM orders o
+                  WHERE o.user_id = u.id AND o.product_id = ?
+                  ORDER BY o.id DESC LIMIT 1) AS payment_status,
+                ua.status AS access_status, ua.is_frozen AS is_paused,
+                ua.is_trial, ua.expires_at
+         FROM users u
+         LEFT JOIN user_access ua ON ua.id = (
+             SELECT id FROM user_access
+             WHERE user_id = u.id AND product_id = ?
+             ORDER BY (status = 'active') DESC, id DESC LIMIT 1
+         )
+         $whereStr
+         ORDER BY u.created_at DESC"
+    );
+    $stmt->execute(array_merge([$clubId, $clubId], $params));
+} else {
+    $stmt = db()->prepare(
+        "SELECT u.id, u.name, u.last_name, u.email, u.phone, u.vk_url, u.tg_url,
+                u.created_at, u.email_verified,
+                s.payment_status,
+                CASE WHEN s.status IN ('active','trial') THEN 'active' ELSE s.status END AS access_status,
+                s.is_paused,
+                CASE WHEN s.status = 'trial' THEN 1 ELSE 0 END AS is_trial,
+                s.expires_at
+         FROM users u
+         LEFT JOIN subscriptions s ON s.id = (
+             SELECT id FROM subscriptions WHERE user_id = u.id ORDER BY created_at DESC LIMIT 1
+         )
+         $whereStr
+         ORDER BY u.created_at DESC"
+    );
+    $stmt->execute($params);
 }
+$allUsers = $stmt->fetchAll();
+
+/** Ключ статуса доступа к клубу — та же логика, что в access_display_status(). */
+function user_status_key(array $u): string {
+    if (empty($u['access_status']) || $u['access_status'] !== 'active') return 'inactive';
+    $expired = !empty($u['expires_at']) && strtotime($u['expires_at']) <= time();
+    if ($expired && !$u['is_paused']) return 'inactive';
+    if ($u['is_trial'])  return 'trial';
+    if ($u['is_paused']) return 'paused';
+    if (($u['payment_status'] ?? '') === 'pending') return 'pending_payment';
+    return 'active';
+}
+
+$statusBadges = [
+    'active'          => ['Активна',               'badge-active'],
+    'trial'           => ['Пробный',               'badge-trial'],
+    'paused'          => ['На паузе',              'badge-paused'],
+    'pending_payment' => ['Ожидает подтверждения', 'badge-pending'],
+    'inactive'        => ['Не активна',            'badge-inactive'],
+];
+
+// Значение 'pending' в селекте оставлено ради старых закладок
+$filterAlias = ['pending' => 'pending_payment'];
+$wantStatus  = $filterAlias[$statusFilter] ?? $statusFilter;
+
+if ($wantStatus) {
+    $allUsers = array_values(array_filter(
+        $allUsers,
+        fn(array $u): bool => user_status_key($u) === $wantStatus
+    ));
+}
+
+$totalCount = count($allUsers);
+$totalPages = max(1, (int)ceil($totalCount / $perPage));
+$users      = array_slice($allUsers, $offset, $perPage);
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -88,7 +124,8 @@ function sub_badge(?string $status, bool $paused, ?string $payment): array {
         <option value="">Все статусы</option>
         <option value="active" <?= $statusFilter === 'active' ? 'selected' : '' ?>>Активна</option>
         <option value="trial" <?= $statusFilter === 'trial' ? 'selected' : '' ?>>Пробный</option>
-        <option value="pending" <?= $statusFilter === 'pending' ? 'selected' : '' ?>>Ожидает оплаты</option>
+        <option value="pending" <?= in_array($statusFilter, ['pending', 'pending_payment'], true) ? 'selected' : '' ?>>Ожидает подтверждения</option>
+        <option value="paused" <?= $statusFilter === 'paused' ? 'selected' : '' ?>>На паузе</option>
         <option value="inactive" <?= $statusFilter === 'inactive' ? 'selected' : '' ?>>Не активна</option>
       </select>
       <button type="submit" class="btn btn-ghost">Найти</button>
@@ -112,9 +149,7 @@ function sub_badge(?string $status, bool $paused, ?string $payment): array {
         </thead>
         <tbody>
           <?php foreach ($users as $u):
-            [$badgeLbl, $badgeCls] = sub_badge(
-              $u['sub_status'], (bool)$u['is_paused'], $u['payment_status']
-            );
+            [$badgeLbl, $badgeCls] = $statusBadges[user_status_key($u)] ?? $statusBadges['inactive'];
           ?>
           <tr>
             <td>
@@ -143,7 +178,7 @@ function sub_badge(?string $status, bool $paused, ?string $payment): array {
     <?php if ($totalPages > 1): ?>
     <div style="display:flex;gap:8px;margin-top:16px">
       <?php for ($p = 1; $p <= $totalPages; $p++): ?>
-      <a href="?q=<?= urlencode($search) ?>&page=<?= $p ?>"
+      <a href="?q=<?= urlencode($search) ?>&status=<?= urlencode($statusFilter) ?>&page=<?= $p ?>"
          class="btn btn-ghost btn-sm<?= $p === $page ? ' btn-primary' : '' ?>"><?= $p ?></a>
       <?php endfor; ?>
     </div>

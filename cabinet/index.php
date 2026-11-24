@@ -4,8 +4,10 @@ require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/csrf.php';
 
 $user = require_login();
-$sub  = get_subscription($user['id']);
-$statusKey = subscription_display_status($sub);
+
+$clubId     = club_product_id();
+$clubAccess = get_access_row((int)$user['id'], $clubId);
+$statusKey  = access_display_status((int)$user['id'], $clubId);
 
 $statusLabels = [
     'active'          => 'Активна',
@@ -27,12 +29,13 @@ $tgChat     = setting('telegram_chat_link');
 $schedule   = setting('schedule_text');
 $welcomeId  = setting('welcome_kinescope_id');
 $welcomeTxt = setting('welcome_text');
-$hasAccess   = has_active_access($sub);
+$hasAccess   = user_has_any_access((int)$user['id']);
 $isTrial     = $statusKey === 'trial';
+$expiresAt   = $clubAccess['expires_at'] ?? null;
 $lessonCount = db()->query('SELECT COUNT(*) FROM lessons WHERE is_visible = 1')->fetchColumn();
 $trialDaysLeft = 0;
-if ($isTrial && $sub && $sub['expires_at']) {
-    $trialDaysLeft = max(0, (int)ceil((strtotime($sub['expires_at']) - time()) / 86400));
+if ($isTrial && $expiresAt) {
+    $trialDaysLeft = max(0, (int)ceil((strtotime($expiresAt) - time()) / 86400));
 }
 ?>
 <!DOCTYPE html>
@@ -91,7 +94,7 @@ if ($isTrial && $sub && $sub['expires_at']) {
     </div>
     <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--cream-deep)">
       <p style="font-size:14px;color:var(--ink-soft);margin-bottom:12px">Понравилось? Оформите подписку и получите полный доступ - живые эфиры 2 раза в неделю, все записи уроков и ответы на вопросы.</p>
-      <?php $isReturning = has_paid_before($user['id']); $suggestedAmount = $isReturning ? 3000 : 3500; $isActive = false; include __DIR__ . '/partials/payment-block.php'; ?>
+      <?php $isReturning = has_paid_product_before((int)$user['id'], $clubId); $suggestedAmount = club_price_for_user((int)$user['id']); $isActive = false; include __DIR__ . '/partials/payment-block.php'; ?>
     </div>
   </div>
   <?php endif; ?>
@@ -115,7 +118,7 @@ if ($isTrial && $sub && $sub['expires_at']) {
     <p style="color:var(--muted); font-size:14px; margin-bottom:20px">
       Оплатите подписку и получите доступ к архиву <?= $lessonCount > 0 ? $lessonCount . '+' : '' ?> уроков йоги
     </p>
-    <?php $isReturning = has_paid_before($user['id']); $suggestedAmount = $isReturning ? 3000 : 3500; $isActive = false; include __DIR__ . '/partials/payment-block.php'; ?>
+    <?php $isReturning = has_paid_product_before((int)$user['id'], $clubId); $suggestedAmount = club_price_for_user((int)$user['id']); $isActive = false; include __DIR__ . '/partials/payment-block.php'; ?>
   </div>
   <?php endif; ?>
 
@@ -160,13 +163,13 @@ if ($isTrial && $sub && $sub['expires_at']) {
       <span class="badge <?= $statusBadges[$statusKey] ?? 'badge-inactive' ?>">
         <?= $statusLabels[$statusKey] ?? 'Не активна' ?>
       </span>
-      <?php if ($sub && $sub['expires_at'] && $hasAccess): ?>
+      <?php if ($expiresAt && $hasAccess): ?>
       <span style="font-size:13px; color:var(--muted)">
-        до <?= date('d.m.Y', strtotime($sub['expires_at'])) ?>
+        до <?= date('d.m.Y', strtotime($expiresAt)) ?>
       </span>
       <?php endif; ?>
     </div>
-    <?php if (!$isTrial): $isReturning = has_paid_before($user['id']); $suggestedAmount = $isReturning ? 3000 : 3500; $isActive = true; include __DIR__ . '/partials/payment-block.php'; endif; ?>
+    <?php if (!$isTrial): $isReturning = has_paid_product_before((int)$user['id'], $clubId); $suggestedAmount = club_price_for_user((int)$user['id']); $isActive = true; include __DIR__ . '/partials/payment-block.php'; endif; ?>
     <?php if ($hasAccess): ?>
     <div style="margin-top:12px">
       <button class="btn btn-outline btn-sm" onclick="document.getElementById('pauseForm').style.display='block';this.style.display='none'">

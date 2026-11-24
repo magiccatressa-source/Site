@@ -7,8 +7,35 @@ $admin = require_admin();
 
 // Stats
 $totalUsers    = db()->query('SELECT COUNT(*) FROM users WHERE role = "user"')->fetchColumn();
-$activeUsers   = db()->query('SELECT COUNT(DISTINCT user_id) FROM subscriptions WHERE status IN ("active","trial")')->fetchColumn();
-$pendingUsers  = db()->query('SELECT COUNT(*) FROM subscriptions WHERE payment_status = "pending" AND status = "active"')->fetchColumn();
+$productStats = [];
+if (access_model_ready()) {
+    $activeUsers = db()->query(
+        "SELECT COUNT(DISTINCT user_id) FROM user_access
+         WHERE status = 'active' AND (expires_at IS NULL OR expires_at > NOW())"
+    )->fetchColumn();
+
+    $pendingUsers = db()->query(
+        "SELECT COUNT(DISTINCT ua.user_id) FROM user_access ua
+         WHERE ua.status = 'active' AND (ua.expires_at IS NULL OR ua.expires_at > NOW())
+           AND (SELECT o.status FROM orders o
+                 WHERE o.user_id = ua.user_id AND o.product_id = ua.product_id
+                 ORDER BY o.id DESC LIMIT 1) = 'pending'"
+    )->fetchColumn();
+
+    // Активные доступы в разрезе продуктов
+    $productStats = db()->query(
+        "SELECT p.title, p.slug, p.is_active,
+                COUNT(ua.id) AS active_count
+         FROM products p
+         LEFT JOIN user_access ua ON ua.product_id = p.id AND ua.status = 'active'
+                                 AND (ua.expires_at IS NULL OR ua.expires_at > NOW())
+         GROUP BY p.id, p.title, p.slug, p.is_active, p.sort_order
+         ORDER BY p.sort_order, p.id"
+    )->fetchAll();
+} else {
+    $activeUsers  = db()->query('SELECT COUNT(DISTINCT user_id) FROM subscriptions WHERE status IN ("active","trial")')->fetchColumn();
+    $pendingUsers = db()->query('SELECT COUNT(*) FROM subscriptions WHERE payment_status = "pending" AND status = "active"')->fetchColumn();
+}
 $recentUsers   = db()->query('SELECT COUNT(*) FROM users WHERE role = "user" AND created_at > DATE_SUB(NOW(), INTERVAL 7 DAY)')->fetchColumn();
 
 // Recent audit log
@@ -31,6 +58,21 @@ $actionLabels = [
     'subscription.pending' => 'Рассрочка выставлена',
     'subscription.paid'    => 'Оплата подтверждена',
     'subscription.bulk_extend' => 'Массовое продление',
+    'access.grant'         => 'Доступ выдан',
+    'access.revoke'        => 'Доступ отозван',
+    'access.extend'        => 'Доступ продлён',
+    'access.trial'         => 'Пробный доступ выдан',
+    'access.freeze'        => 'Доступ заморожен',
+    'access.unfreeze'      => 'Заморозка снята',
+    'access.update_expires'=> 'Дата окончания изменена',
+    'access.bulk_extend'   => 'Массовое продление',
+    'access.payment_confirmed' => 'Оплата подтверждена',
+    'access.payment_pending'   => 'Оплата ожидает подтверждения',
+    'product.create'       => 'Продукт создан',
+    'product.update'       => 'Продукт обновлён',
+    'product.delete'       => 'Продукт удалён',
+    'pause.approve'        => 'Заморозка одобрена',
+    'pause.reject'         => 'Заморозка отклонена',
     'settings.update'      => 'Настройки обновлены',
     'lesson.create'        => 'Урок добавлен',
     'lesson.update'        => 'Урок обновлён',
@@ -81,6 +123,28 @@ function page_title(string $t): string { return htmlspecialchars($t, ENT_QUOTES,
         <div class="stat-lbl">Новых за 7 дней</div>
       </div>
     </div>
+
+    <?php if ($productStats): ?>
+    <div class="acard">
+      <div class="acard-title">Активные доступы по продуктам</div>
+      <table class="data-table">
+        <thead><tr><th>Продукт</th><th>Активных доступов</th><th></th></tr></thead>
+        <tbody>
+          <?php foreach ($productStats as $ps): ?>
+          <tr>
+            <td><?= page_title($ps['title']) ?>
+              <span style="color:var(--muted);font-size:12px"><?= page_title($ps['slug']) ?></span>
+            </td>
+            <td><?= (int)$ps['active_count'] ?></td>
+            <td style="font-size:12px;color:var(--muted)">
+              <?= $ps['is_active'] ? '' : 'скрыт на витрине' ?>
+            </td>
+          </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
+    <?php endif; ?>
 
     <div class="acard">
       <div class="acard-title">Последние действия</div>

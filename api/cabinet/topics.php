@@ -7,15 +7,34 @@ header('Content-Type: application/json; charset=utf-8');
 only_get();
 $user = require_login();
 
-$sub = get_subscription($user['id']);
-if (!has_active_access($sub)) {
+// Темы отдаются только те, что входят в доступные пользователю продукты.
+// Необязательный параметр product=<slug> сужает выборку до одного продукта.
+$topicIds = accessible_topic_ids((int)$user['id']);
+if (!$topicIds) {
     json_err('subscription_required', 403);
 }
 
+$productSlug = trim($_GET['product'] ?? '');
+if ($productSlug !== '') {
+    $product = product_by_slug($productSlug);
+    if (!$product || !has_access((int)$user['id'], (int)$product['id'])) {
+        json_err('no_access_to_product', 403);
+    }
+    $s = db()->prepare('SELECT topic_id FROM product_topics WHERE product_id = ?');
+    $s->execute([(int)$product['id']]);
+    $ofProduct = array_map('intval', $s->fetchAll(PDO::FETCH_COLUMN));
+    $topicIds  = array_values(array_intersect($topicIds, $ofProduct));
+    if (!$topicIds) json_ok(['topics' => []]);
+}
+
+$ph = implode(',', array_fill(0, count($topicIds), '?'));
+
 $topics = db()->prepare(
-    'SELECT id, title, description, is_current FROM topics WHERE is_visible = 1 ORDER BY sort_order, id'
+    "SELECT id, title, description, is_current FROM topics
+     WHERE is_visible = 1 AND id IN ($ph)
+     ORDER BY sort_order, id"
 );
-$topics->execute();
+$topics->execute($topicIds);
 $topicRows = $topics->fetchAll();
 
 // Get progress and favorites for this user
@@ -35,10 +54,10 @@ foreach ($s->fetchAll() as $f) {
 
 // Get lessons per topic
 $lessonsStmt = db()->prepare(
-    'SELECT id, topic_id, title, duration_min, is_trial FROM lessons
-     WHERE is_visible = 1 ORDER BY topic_id, sort_order, id'
+    "SELECT id, topic_id, title, duration_min, is_trial FROM lessons
+     WHERE is_visible = 1 AND topic_id IN ($ph) ORDER BY topic_id, sort_order, id"
 );
-$lessonsStmt->execute();
+$lessonsStmt->execute($topicIds);
 
 $lessonsByTopic = [];
 foreach ($lessonsStmt->fetchAll() as $l) {

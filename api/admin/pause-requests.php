@@ -8,16 +8,32 @@ header('Content-Type: application/json; charset=utf-8');
 $admin = require_admin();
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $rows = db()->query(
-        'SELECT pr.id, pr.user_id, pr.days, pr.reason, pr.status, pr.admin_note,
-                pr.created_at, pr.reviewed_at,
-                u.name, u.last_name, u.email,
-                s.expires_at
-         FROM pause_requests pr
-         JOIN users u ON u.id = pr.user_id
-         LEFT JOIN subscriptions s ON s.user_id = pr.user_id
-         ORDER BY pr.status ASC, pr.created_at DESC'
-    )->fetchAll();
+    if (access_model_ready()) {
+        $rows = db()->prepare(
+            "SELECT pr.id, pr.user_id, pr.days, pr.reason, pr.status, pr.admin_note,
+                    pr.created_at, pr.reviewed_at,
+                    u.name, u.last_name, u.email,
+                    ua.expires_at
+             FROM pause_requests pr
+             JOIN users u ON u.id = pr.user_id
+             LEFT JOIN user_access ua ON ua.user_id = pr.user_id AND ua.product_id = ?
+                                     AND ua.status = 'active'
+             ORDER BY pr.status ASC, pr.created_at DESC"
+        );
+        $rows->execute([club_product_id()]);
+        $rows = $rows->fetchAll();
+    } else {
+        $rows = db()->query(
+            'SELECT pr.id, pr.user_id, pr.days, pr.reason, pr.status, pr.admin_note,
+                    pr.created_at, pr.reviewed_at,
+                    u.name, u.last_name, u.email,
+                    s.expires_at
+             FROM pause_requests pr
+             JOIN users u ON u.id = pr.user_id
+             LEFT JOIN subscriptions s ON s.user_id = pr.user_id
+             ORDER BY pr.status ASC, pr.created_at DESC'
+        )->fetchAll();
+    }
     json_ok(['requests' => $rows]);
 }
 
@@ -37,13 +53,10 @@ if ($req['status'] !== 'pending') json_err('already_reviewed');
 if ($action === 'approve') {
     $days = (int)($data['days'] ?? $req['days']); // admin can override days
 
-    // Extend subscription
-    db()->prepare(
-        'UPDATE subscriptions
-         SET expires_at = DATE_ADD(COALESCE(expires_at, CURDATE()), INTERVAL ? DAY),
-             is_paused = 0
-         WHERE user_id = ?'
-    )->execute([$days, $req['user_id']]);
+    // Заявка на заморозку = продлить доступ на эти дни и снять флаг
+    $clubId = club_product_id();
+    extend_access((int)$req['user_id'], $clubId, $days, $admin['id']);
+    clear_freeze((int)$req['user_id'], $clubId);
 
     db()->prepare(
         'UPDATE pause_requests

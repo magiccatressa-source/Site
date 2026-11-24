@@ -8,9 +8,6 @@ header('Content-Type: application/json; charset=utf-8');
 only_post();
 $user = require_login();
 
-$sub = get_subscription($user['id']);
-if (!has_active_access($sub)) json_err('subscription_required', 403);
-
 $data       = body();
 $lessonId   = (int)($data['lesson_id'] ?? 0);
 $watchSec   = (int)($data['watch_seconds'] ?? 0);
@@ -22,6 +19,9 @@ if (!$lessonId) json_err('missing_lesson_id');
 $s = db()->prepare('SELECT id FROM lessons WHERE id = ? AND is_visible = 1');
 $s->execute([$lessonId]);
 if (!$s->fetch()) json_err('lesson_not_found', 404);
+
+// Прогресс пишем только по уроку, к которому есть доступ
+if (!can_view_lesson((int)$user['id'], $lessonId)) json_err('no_access_to_lesson', 403);
 
 db()->prepare(
     'INSERT INTO lesson_progress (user_id, lesson_id, watch_seconds, completed, watched_at)

@@ -4,21 +4,26 @@ require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/csrf.php';
 
 $user = require_login();
-$sub = get_subscription($user['id']);
-$hasAccess = has_active_access($sub);
+$hasAccess = user_has_any_access((int)$user['id']);
 
+// Избранное работает поверх всех доступных уроков: показываем только те,
+// что входят в продукты с активным доступом.
 $favorites = [];
 if ($hasAccess) {
-    $s = db()->prepare(
-        'SELECT l.id, l.title, l.duration_min, t.title AS topic_title
-         FROM lesson_favorites lf
-         JOIN lessons l ON l.id = lf.lesson_id AND l.is_visible = 1
-         JOIN topics t ON t.id = l.topic_id
-         WHERE lf.user_id = ?
-         ORDER BY lf.created_at DESC'
-    );
-    $s->execute([$user['id']]);
-    $favorites = $s->fetchAll();
+    $topicIds = accessible_topic_ids((int)$user['id']);
+    if ($topicIds) {
+        $ph = implode(',', array_fill(0, count($topicIds), '?'));
+        $s = db()->prepare(
+            "SELECT l.id, l.title, l.duration_min, t.title AS topic_title
+             FROM lesson_favorites lf
+             JOIN lessons l ON l.id = lf.lesson_id AND l.is_visible = 1
+             JOIN topics t ON t.id = l.topic_id
+             WHERE lf.user_id = ? AND l.topic_id IN ($ph)
+             ORDER BY lf.created_at DESC"
+        );
+        $s->execute(array_merge([$user['id']], $topicIds));
+        $favorites = $s->fetchAll();
+    }
 }
 ?>
 <!DOCTYPE html>
