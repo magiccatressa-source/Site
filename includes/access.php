@@ -884,11 +884,12 @@ function legacy_sync_subscription(int $userId): void {
             $status = 'expired';
         }
 
+        // payment_method в живой таблице subscriptions нет: миграция 0006
+        // на прод не применялась. Способ оплаты теперь живёт в
+        // orders.payment_provider, зеркалить его некуда и не нужно.
         $order  = latest_order($userId, $clubId);
         $payStatus = $order && in_array($order['status'], ['paid', 'pending'], true)
             ? $order['status'] : null;
-        $payMethod = $order && in_array($order['payment_provider'], ['phone', 'prodamus', 'manual'], true)
-            ? $order['payment_provider'] : 'manual';
 
         $expires = $row['expires_at'] !== null ? date('Y-m-d', strtotime($row['expires_at'])) : null;
         $starts  = $row['starts_at'] !== null ? date('Y-m-d', strtotime($row['starts_at'])) : null;
@@ -901,22 +902,22 @@ function legacy_sync_subscription(int $userId): void {
             db()->prepare(
                 'UPDATE subscriptions
                  SET status = ?, is_paused = ?, pause_started_at = ?, pause_notes = ?,
-                     payment_status = ?, payment_method = ?, started_at = ?, expires_at = ?,
+                     payment_status = ?, started_at = ?, expires_at = ?,
                      notes = ?
                  WHERE id = ?'
             )->execute([
                 $status, (int)$row['is_frozen'], $row['frozen_at'], $row['freeze_notes'],
-                $payStatus, $payMethod, $starts, $expires, $row['notes'], $subId,
+                $payStatus, $starts, $expires, $row['notes'], $subId,
             ]);
         } else {
             db()->prepare(
                 'INSERT INTO subscriptions
                  (user_id, status, is_paused, pause_started_at, pause_notes,
-                  payment_status, payment_method, started_at, expires_at, notes)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+                  payment_status, started_at, expires_at, notes)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
             )->execute([
                 $userId, $status, (int)$row['is_frozen'], $row['frozen_at'], $row['freeze_notes'],
-                $payStatus, $payMethod, $starts, $expires, $row['notes'],
+                $payStatus, $starts, $expires, $row['notes'],
             ]);
         }
     } catch (Throwable $e) {

@@ -174,6 +174,11 @@ CROSS JOIN (SELECT id FROM products WHERE slug = 'club') p;
 -- Нужны, чтобы сохранить состояние "ожидает подтверждения" и
 -- признак "клиент уже платил" (от него зависит цена продления).
 -- amount = 0: историческая сумма в subscriptions не хранилась.
+--
+-- payment_provider = 'manual', external_id = NULL, paid_at = дата
+-- создания подписки: миграция 0006 на прод не применялась, колонок
+-- payment_method / prodamus_transaction_id / payment_date в живой
+-- таблице subscriptions нет, и этих данных попросту не существует.
 -- ============================================================
 INSERT INTO orders
     (user_id, product_id, amount, status, payment_provider, external_id,
@@ -183,13 +188,11 @@ SELECT
     p.id,
     0,
     CASE WHEN s.payment_status = 'paid' THEN 'paid' ELSE 'pending' END,
-    COALESCE(s.payment_method, 'manual'),
-    s.prodamus_transaction_id,
+    'manual',
+    NULL,
     'Перенесено из subscriptions миграцией 0007, сумма неизвестна',
     s.created_at,
-    CASE WHEN s.payment_status = 'paid'
-         THEN COALESCE(s.payment_date, s.created_at)
-         ELSE NULL END
+    CASE WHEN s.payment_status = 'paid' THEN s.created_at ELSE NULL END
 FROM subscriptions s
 CROSS JOIN (SELECT id FROM products WHERE slug = 'club') p
 WHERE s.payment_status IS NOT NULL
