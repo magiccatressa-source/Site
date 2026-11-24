@@ -150,11 +150,7 @@ $subStatus = access_display_status((int)$user['id'], $clubId);
 
     <p style="font-size:15px; margin-bottom:4px">
       Сумма: <strong><?= $suggestedAmount ?> ₽</strong>
-      <?php if ($isReturning): ?>
-        <span style="font-size:13px; color:var(--muted)">(постоянный клиент)</span>
-      <?php else: ?>
-        <span style="font-size:13px; color:var(--muted)">(первая подписка)</span>
-      <?php endif; ?>
+      <span style="font-size:13px; color:var(--muted)">за месяц</span>
     </p>
     <p style="font-size:14px; margin-bottom:8px">Переведите через СБП по номеру телефона:</p>
     <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:6px">

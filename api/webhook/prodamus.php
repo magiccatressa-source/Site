@@ -69,7 +69,8 @@ if ($secretKey) {
 }
 
 // ── Проверка суммы (защита от "оплаты" по подменённой ссылке) ──
-// Актуальные цены клуба: 3500₽ (первый месяц) / 3000₽ (продление) — см. cabinet/partials/payment-block.php
+// Актуальная цена клуба: 3000₽ в месяц, одна для всех (с 2026-11-25).
+// Цена живёт в products, см. club_price_for_user() в includes/access.php.
 $MIN_VALID_AMOUNT = 2000.0;
 $amount = (float)str_replace(',', '.', $data['sum'] ?? $data['amount'] ?? 0);
 if ($amount < $MIN_VALID_AMOUNT) {

@@ -11,9 +11,7 @@
 <div class="payment-block" style="margin-top:16px">
   <p style="font-size:14px;margin-bottom:14px">
     Сумма: <strong><?= $suggestedAmount ?> ₽</strong>
-    <span style="font-size:13px;color:var(--muted)">
-      <?= $isReturning ? '(постоянный клиент)' : '(первая подписка)' ?>
-    </span>
+    <span style="font-size:13px;color:var(--muted)">за месяц</span>
   </p>
 
   <p style="font-size:13px;font-weight:500;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.08em">Как оплатить?</p>

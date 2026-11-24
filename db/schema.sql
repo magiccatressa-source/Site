@@ -172,7 +172,7 @@ INSERT INTO products
 SELECT 'club', 'Клуб «Лучистая йога»',
        'Живые занятия дважды в неделю и весь архив уроков',
        'Живые занятия в Zoom два раза в неделю, доступ ко всему архиву уроков, записи всех эфиров, ответы на вопросы и поддерживающее сообщество.',
-       'subscription', 3500.00, 3000.00, 30,
+       'subscription', 3000.00, NULL, 30,
        'https://luchistaya-yoga.payform.ru', 'https://t.me/indicatrisa', 1, 10
 FROM DUAL
 WHERE NOT EXISTS (SELECT 1 FROM products WHERE slug = 'club');
