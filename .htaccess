@@ -19,8 +19,16 @@ RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
     Deny from all
 </FilesMatch>
 
-# ── Block direct access to includes/ and db/ ────────────────
-RewriteRule ^(includes|db)/ - [F,L]
+# ── Block direct access to includes/, db/, docs/ ────────────
+RewriteRule ^(includes|db|docs|\.claude)/ - [F,L]
+
+# ── Служебные файлы не должны быть видны снаружи ─────────────
+# Документация, инструкции, дампы и архивы. В CLAUDE.md и в docs/
+# описано устройство сайта — посторонним это знать незачем.
+<FilesMatch "\.(md|markdown|sql|yml|yaml|bundle|zip|gz|tar)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
 
 # ── Clean URLs ───────────────────────────────────────────────
 RewriteRule ^trial$ /trial.php [L]

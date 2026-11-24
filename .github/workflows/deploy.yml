@@ -23,7 +23,9 @@ jobs:
       - name: Deploy via rsync
         uses: burnett01/rsync-deployments@7.0.1
         with:
-          switches: -avzr --delete --exclude='.git*' --exclude='.DS_Store' --exclude='includes/config.php'
+          # ВНИМАНИЕ: никогда не добавлять --delete-excluded. Оно удалит
+          # на сервере includes/config.php, и сайт мгновенно ляжет.
+          switches: -avzr --delete --exclude='.git*' --exclude='.DS_Store' --exclude='includes/config.php' --exclude='CLAUDE.md' --exclude='docs/' --exclude='.claude/' --exclude='*.md'
           path: ./
           remote_path: /home/f/focuspkp/luchistaya-yoga.ru/public_html/
           remote_host: focuspkp.beget.tech
