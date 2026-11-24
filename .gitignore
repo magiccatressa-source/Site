@@ -5,6 +5,11 @@ includes/config.php
 .DS_Store
 Thumbs.db
 
+# Рабочие копии репозитория, которые заводит Claude Code.
+# Попав в коммит, они становятся ссылками на несуществующий
+# вложенный репозиторий, и GitHub Actions падает с exit code 128.
+.claude/worktrees/
+
 # Логи
 *.log
 error_log
